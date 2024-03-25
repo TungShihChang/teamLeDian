@@ -15,6 +15,8 @@ import { PiCoins } from "react-icons/pi";
 import { GiCancel } from "react-icons/gi";
 import DateTimePicker from "./dateTimePicker";
 import axios from "axios";
+import { HmacSHA256 } from "crypto-js";
+import Base64 from "crypto-js/enc-base64";
 
 class cartPay extends Component {
   constructor(props) {
@@ -32,15 +34,10 @@ class cartPay extends Component {
       quantity: 0,
       sumPrice: 0,
       lastPrice: 0,
-      payMethod: 1,
-      receipt: 1,
+      payMethod: 0,
+      e_bill_text: "", //載具文字
       dbcarts: [
         {
-          brand_id: "2",
-          branch_name: "",
-          branch_address: "",
-          branch_phone: "",
-          brand_name: "",
           item_img: "1_5",
           item_ingredient: "",
           item_id: 1,
@@ -50,10 +47,9 @@ class cartPay extends Component {
         },
       ],
 
-      pickupInfo: { personName: "JHEN", personPhone: "0912345432" },
+      // pickupInfo: { personName: "JHEN", personPhone: "0912345432" },
       memo: "",
       uniform: "",
-      vehicle: "",
       productEdit: [
         { size_choose: [] },
         { temperature_choose: [] },
@@ -101,7 +97,7 @@ class cartPay extends Component {
   nextStep = () => {
     const { currentStep } = this.state;
     this.setState({ currentStep: currentStep + 1 });
-    console.log(currentStep);
+    // console.log(currentStep);
 
     if (currentStep !== 2) {
       const progressBar = document.getElementById("progressbar");
@@ -192,17 +188,17 @@ class cartPay extends Component {
   //取貨人姓名、電話
   name_change = (e) => {
     let newState = { ...this.state };
-    newState.pickupInfo.personName = e.target.value;
+    newState.userinfo.name = e.target.value;
     this.setState(newState);
   };
   name_check = () => {
     let newState = { ...this.state };
     let rules = new RegExp(/^[^\d_\W]+$/);
 
-    newState.pickupInfo.personName = rules.test(newState.pickupInfo.personName)
-      ? newState.pickupInfo.personName
+    newState.userinfo.name = rules.test(newState.userinfo.name)
+      ? newState.userinfo.name
       : "";
-    if (!newState.pickupInfo.personName) {
+    if (!newState.userinfo.name) {
       swal({
         title: "請填入正確的姓名",
         icon: "warning",
@@ -215,19 +211,17 @@ class cartPay extends Component {
 
   phone_change = (e) => {
     let newState = { ...this.state };
-    newState.pickupInfo.personPhone = e.target.value;
+    newState.userinfo.phone = e.target.value;
     this.setState(newState);
   };
   phone_check = () => {
     let newState = { ...this.state };
     let rules = new RegExp(/^09\d{8}/);
 
-    newState.pickupInfo.personPhone = rules.test(
-      newState.pickupInfo.personPhone
-    )
-      ? newState.pickupInfo.personPhone
+    newState.userinfo.phone = rules.test(newState.userinfo.phone)
+      ? newState.userinfo.phone
       : "";
-    if (!newState.pickupInfo.personPhone) {
+    if (!newState.userinfo.phone) {
       swal({
         title: "請填入正確的電話號碼",
         icon: "warning",
@@ -239,10 +233,7 @@ class cartPay extends Component {
   };
 
   name_phone_check = () => {
-    if (
-      this.state.pickupInfo.personName === "" ||
-      this.state.pickupInfo.personPhone === ""
-    ) {
+    if (this.state.userinfo.name === "" || this.state.userinfo.name === "") {
       swal({
         title: "請將取貨人資訊填寫完整",
         icon: "warning",
@@ -261,17 +252,17 @@ class cartPay extends Component {
     this.setState(newState);
   };
 
-  //發票
+  //統編
   uniform_change = (e) => {
     let newState = { ...this.state };
     newState.uniform = e.target.value;
     this.setState(newState);
   };
 
-  //統一標號
-  vehicle_change = (e) => {
+  //載具
+  e_bill_change = (e) => {
     let newState = { ...this.state };
-    newState.vehicle = e.target.value;
+    newState.e_bill_text = e.target.value;
     this.setState(newState);
   };
 
@@ -307,6 +298,31 @@ class cartPay extends Component {
     this.setState(newState);
   };
 
+  //line pay
+
+  // createSignature = (uri, linePayBody) => {
+  //   const SecretKey = "085beec8f76f130cf12838cfeb1835f2";
+  //   const LINEPAY_CHANNEL_ID = 2004276099;
+  //   const LINEPAY_VERSION = "v3";
+  //   const LINEPAY_SITE = "https://sandbox-api-pay.line.me";
+
+  //   let nonce = parseInt(new Date().getTime() / 1000);
+  //   const string = `${SecretKey}/${LINEPAY_VERSION}${uri}${JSON.stringify(
+  //     linePayBody
+  //   )}${nonce}`;
+
+  //   const signature = Base64.stringify(HmacSHA256(string, SecretKey));
+  //   console.log(linePayBody, signature);
+  //   const headers = {
+  //     "Content-Type": "application/json",
+  //     "X-LINE-ChannelId": LINEPAY_CHANNEL_ID,
+  //     "X-LINE-Authorization-Nonce": nonce,
+  //     "X-LINE-Authorization": signature,
+  //   };
+  //   console.log("headersssssss" + headers);
+  //   return headers;
+  // };
+
   //提交訂單
   handleButtonClick = async () => {
     let newSate = { ...this.state };
@@ -330,16 +346,19 @@ class cartPay extends Component {
     //datails迴圈整理
     let serverData = {
       user_id: 1,
-      branch_id: 1,
+      brand_name: this.state.dbcarts[0].brand_name,
+      branch_name: this.state.dbcarts[0].branch_name,
       orders_total: this.state.lastPrice,
       orders_bag: this.state.bag_isChecked ? 1 : 0,
       orders_bag_num: this.state.bagQuantity,
       usePoninter: Number(this.state.usePoninter),
-      terms_of_payment: Number(this.state.payMethod),
-      invoicing_method: Number(this.state.vehicle),
+      terms_of_payment: Number(this.state.payMethod) ? "Line Pay" : "現金",
+      invoicing_method: Number(this.state.invoicing_method)
+        ? `載具-${this.state.e_bill_text}`
+        : "紙本發票",
       orders_pick_up: this.state.pickupTime,
       orders_status: 1,
-      payment_status: Number(this.state.payMethod) === 1 ? 1 : 2,
+      payment_status: Number(this.state.payMethod) ? 1 : 0,
       updatetime: new Date(),
       createtime: new Date(),
       details: detailsdata,
@@ -352,11 +371,24 @@ class cartPay extends Component {
       },
     };
     console.log(serverData);
-    await axios.post(
-      "http://localhost:8000/cartPay",
-      JSON.stringify(serverData),
-      config
-    );
+
+    await axios
+      .post("http://localhost:8000/cartPay", JSON.stringify(serverData), config)
+      .then((res) => {
+        console.log(res.data);
+        // window.location.href = res.data;
+        window.location.replace(res.data);
+      })
+      .then(async (res) => {
+        console.log(res);
+        await axios.get("http://localhost:8000/linepay/confirm");
+      });
+    // .then(async (res) => {
+    //   console.log(res);
+
+    // });
+    // console.log("web", linePayRes?.data?.info.paymentUrl.web); //'https://sandbox-web-pay.line.me/web/payment/wait?transactionReserveId=RUpIVkRJQ0lyR2FBL3hzRUFQVm5XaEFxSHlXWGlHWjVmUTVVdUR2ZHg4YUJuU0NmSGpFMzdWdU1VdW41UlhEbA',
+    // console.log("Apple123", linePayRes.data);
 
     //   // //串接linepay
     // await axios.post(
@@ -379,9 +411,13 @@ class cartPay extends Component {
   };
 
   //發票
-  receipt_change = (e) => {
+  bill_change = (e) => {
     let newSate = { ...this.state };
-    newSate.receipt = e.target.value;
+    newSate.invoicing_method = Number(e.target.value);
+    console.log(e.target.value);
+    if (!newSate.invoicing_method) {
+      newSate.e_bill_text = "";
+    }
     this.setState(newSate);
     // console.log(this.state.receipt);
   };
@@ -745,7 +781,7 @@ class cartPay extends Component {
                               aria-hidden="true"
                             >
                               <div className="modal-dialog modal-dialog-centered">
-                                <div className="modal-content join-box">
+                                <div className="modal-content modal-content-cart join-box">
                                   <div className="modal-header d-flex justify-content-center pb-0 border-0">
                                     <h5
                                       className="modal-title text-title-b"
@@ -902,7 +938,7 @@ class cartPay extends Component {
                             aria-hidden="true"
                           >
                             <div className="modal-dialog modal-lg ">
-                              <div className="modal-content">
+                              <div className="modal-content modal-content-cart">
                                 <div className="modal-body">
                                   <div className="modal-body">
                                     <div className="container-fluid">
@@ -1776,7 +1812,7 @@ class cartPay extends Component {
                               <input
                                 className="ms-2 mt-3 form-control input-box"
                                 type="text"
-                                value={this.state.pickupInfo.personName}
+                                value={this.state.userinfo.name}
                                 onChange={this.name_change}
                                 onBlur={this.name_check}
                                 maxLength={20}
@@ -1789,7 +1825,7 @@ class cartPay extends Component {
                               <input
                                 className="ms-2 mt-3 form-control input-box"
                                 type="text"
-                                value={this.state.pickupInfo.personPhone}
+                                value={this.state.userinfo.phone}
                                 onChange={this.phone_change}
                                 maxLength={10}
                                 onBlur={this.phone_check}
@@ -1810,7 +1846,7 @@ class cartPay extends Component {
                                 id="cash"
                                 name="pay-method"
                                 defaultChecked
-                                value="1"
+                                value="0"
                                 onChange={this.payMethod_change}
                               />
                               <label htmlFor="cash" className="text-des">
@@ -1828,7 +1864,7 @@ class cartPay extends Component {
                                 type="radio"
                                 name="pay-method"
                                 id="line-pay"
-                                value="2"
+                                value="1"
                                 onChange={this.payMethod_change}
                               />
                               <label htmlFor="line-pay" className="text-des">
@@ -1853,11 +1889,11 @@ class cartPay extends Component {
                               <input
                                 className="ms-2 input_box"
                                 type="radio"
-                                name="receipt"
+                                name="invoice"
                                 id="bill"
                                 defaultChecked
-                                value={1}
-                                onChange={this.receipt_change}
+                                value="0"
+                                onChange={this.bill_change}
                               />
                               <label htmlFor="bill" className="text-des">
                                 紙本發票
@@ -1867,12 +1903,12 @@ class cartPay extends Component {
                               <input
                                 className="ms-2 input_box"
                                 type="radio"
-                                id="vehicle"
-                                name="receipt"
-                                value={2}
-                                onChange={this.receipt_change}
+                                name="invoice"
+                                id="e-bill"
+                                value="1"
+                                onChange={this.bill_change}
                               />
-                              <label htmlFor="vehicle" className="text-des">
+                              <label htmlFor="e-bill" className="text-des">
                                 載具
                               </label>
                             </div>
@@ -1880,7 +1916,9 @@ class cartPay extends Component {
                               <input
                                 className="ms-2 mt-3 form-control input-box"
                                 type="text"
-                                onChange={this.vehicle_change}
+                                value={this.state.e_bill_text}
+                                // readOnly
+                                onChange={this.e_bill_change}
                               />
                             </div>
                           </div>
@@ -1963,7 +2001,7 @@ class cartPay extends Component {
                               </div>
                               <div className="col">
                                 <h4 className="text-des">
-                                  {this.state.pickupInfo.personName}
+                                  {this.state.userinfo.name}
                                 </h4>
                               </div>
                               <hr className="mt-2 hr-line" />
@@ -1975,7 +2013,7 @@ class cartPay extends Component {
                               </div>
                               <div className="col">
                                 <h4 className="text-des">
-                                  {this.state.pickupInfo.personPhone}
+                                  {this.state.userinfo.phone}
                                 </h4>
                               </div>
                               <hr className="mt-2 hr-line" />
@@ -2011,9 +2049,7 @@ class cartPay extends Component {
                               </div>
                               <div className="col">
                                 <h4 className="text-des">
-                                  {this.state.payMethod === 1
-                                    ? "現金"
-                                    : "LINE Pay"}
+                                  {this.state.payMethod ? "Line Pay" : "現金"}
                                 </h4>
                               </div>
                               <hr className="mt-2 hr-line" />
@@ -2025,8 +2061,8 @@ class cartPay extends Component {
                               </div>
                               <div className="col">
                                 <h4 className="text-des">
-                                  {this.state.vehicle
-                                    ? `手機載具-${this.state.vehicle}`
+                                  {this.state.e_bill_text
+                                    ? `手機載具-${this.state.e_bill_text}`
                                     : "紙本發票"}
                                 </h4>
                               </div>
@@ -2202,73 +2238,84 @@ class cartPay extends Component {
   };
   pointinfoShow = (event) => {
     document.getElementById("pointinfo").style.top = event.clientY + 50 + "px";
-    document.getElementById("pointinfo").style.left = event.clientX - 150 + "px";
-} 
+    document.getElementById("pointinfo").style.left =
+      event.clientX - 150 + "px";
+  };
 
-pointinfoHide = (event) => {
+  pointinfoHide = (event) => {
     document.getElementById("pointinfo").style.top = "-500px";
     event.cancelBubble = true;
-}
+  };
 
-toggleMemberNav = () => {
-    const userdata = localStorage.getItem('userdata');
-    if(userdata){
-        document.getElementById('memberNav').classList.toggle('collapse');
-    }else{
-        const path = this.props.location.pathname;
-        sessionStorage.setItem('redirect',path) ;
-        window.location = "/login";
+  toggleMemberNav = () => {
+    const userdata = localStorage.getItem("userdata");
+    if (userdata) {
+      document.getElementById("memberNav").classList.toggle("collapse");
+    } else {
+      const path = this.props.location.pathname;
+      sessionStorage.setItem("redirect", path);
+      window.location = "/login";
     }
-  }
-toggleMenuNav = () => {
-    document.getElementById('menuNav').classList.toggle('menuNav');
-}
-logoutClick = async () => {
+  };
+  toggleMenuNav = () => {
+    document.getElementById("menuNav").classList.toggle("menuNav");
+  };
+  logoutClick = async () => {
     // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-        // 告訴後台使用者要登出
-        await axios.post('http://localhost:8000/logout');
-    
-        
-        //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
+      // 告訴後台使用者要登出
+      await axios.post("http://localhost:8000/logout");
+
+      //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
-        console.error("登出時出錯:", error);
+      console.error("登出時出錯:", error);
     }
-    
-    document.getElementById('memberNav').classList.add('collapse');
-    this.setState({})
-    window.location = "/index"
-}
-loginCheck = () => {
-    const userData = JSON.parse(localStorage.getItem('userdata'));
-    if(userData){
-        const userImg = userData.user_img?userData.user_img:'LeDian.png';
-        return (
-            <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-                <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-                會員專區▼</h4>
-            )
-    }else {
-        return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
-    }              
-}
-cartMenuClick = () => {
-    const userData = JSON.parse(localStorage.getItem('userdata'));
-    if(userData){
-        const userId = userData.user_id;
-        window.location = `/cartlist/${userId}`;
-    }else {
-        window.location = "/login";
-    }              
 
-}
-
-componentDidMount = async () => {
+    document.getElementById("memberNav").classList.add("collapse");
+    this.setState({});
+    window.location = "/index";
+  };
+  loginCheck = () => {
+    const userData = JSON.parse(localStorage.getItem("userdata"));
+    if (userData) {
+      const userImg = userData.user_img ? userData.user_img : "LeDian.png";
+      return (
+        <h4
+          id="loginBtn"
+          className="my-auto btn headerText text-nowrap"
+          onClick={this.toggleMemberNav}
+        >
+          <img
+            id="memberHeadshot"
+            src={`/img/users/${userImg}`}
+            alt="memberHeadshot"
+            className="img-fluid my-auto mx-1 rounded-circle border"
+          ></img>
+          會員專區▼
+        </h4>
+      );
+    } else {
+      return (
+        <h4
+          id="loginBtn"
+          className="my-auto btn headerText align-self-center"
+          onClick={this.toggleMemberNav}
+        >
+          登入/註冊▼
+        </h4>
+      );
+    }
+  };
+  componentDidMount = async () => {
     console.log(this.props.match.params.id);
     let newState = { ...this.state };
+    let user = await axios.get("http://localhost:8000/user/1");
+    newState.userinfo = user.data;
+    newState.e_bill_text = newState.userinfo.barcode;
+    console.log("userinfo", newState.userinfo);
     let result = await axios.get(
       `http://localhost:8000/cartPay/${this.props.match.params.id}`
     );
