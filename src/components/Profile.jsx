@@ -129,7 +129,7 @@ class Profile extends Component {
       windowWidth,
       displayMinicol10: windowWidth <= 1050 ? "block" : "none",
       displayCol6: windowWidth <= 1050 ? "block" : "none",
-    });
+    });                                                                                                                               
   };
 
   handleForm1Submit = (event) => {
@@ -1309,19 +1309,49 @@ logoutClick = async () => {
     this.setState({})
     window.location = "/index"
 }
+
 loginCheck = () => {
-    const userData = JSON.parse(localStorage.getItem('userdata'));
-    if(userData){
-        const userImg = userData.user_img?userData.user_img:'LeDian.png';
-        return (
-            <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-                <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-                會員專區▼</h4>
-            )
-    }else {
-        return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
-    }              
+  const userData = JSON.parse(localStorage.getItem("userdata"));
+  if (userData) {
+    Axios.get(`http://localhost:8000/user/${userData.user_id}`)
+      .then((response) => {
+        const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
+        this.setState({ userImg });
+      })
+      .catch((error) => {
+        console.error("Failed to fetch user data:", error);
+      });
+
+    return (
+      <h4
+        id="loginBtn"
+        className="my-auto btn headerText text-nowrap"
+        onClick={this.toggleMemberNav}
+      >
+        <img
+          id="memberHeadshot"
+          src={`/img/users/${this.state.userImg}`}
+          alt="memberHeadshot"
+          className="img-fluid my-auto mx-1 rounded-circle border"
+        ></img>
+        會員專區▼
+      </h4>
+    );
+  } else {
+    return (
+      <h4
+        id="loginBtn"
+        className="my-auto btn headerText align-self-center"
+        onClick={this.toggleMemberNav}
+      >
+        登入/註冊▼
+      </h4>
+    );
+  }
 }
+
+
+
 cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem('userdata'));
     if(userData){
