@@ -606,7 +606,7 @@ class Profile extends Component {
                           ? `/img/users/${userData.user_img}`
                           : "/img/users/Ledian.png"
                       }
-                      alt="memberHeadshot"
+                      alt="點選確認"
                       className="w-100 img-fluid mt-1 mx-1 rounded-circle border"
                     ></img>
                   </div>
@@ -1309,18 +1309,22 @@ logoutClick = async () => {
     this.setState({})
     window.location = "/index"
 }
-loginCheck = () => {
-    const userData = JSON.parse(localStorage.getItem('userdata'));
-    if(userData){
-        const userImg = userData.user_img?userData.user_img:'LeDian.png';
-        return (
-            <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-                <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-                會員專區▼</h4>
-            )
-    }else {
-        return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
-    }              
+loginCheck = async () => {
+  const userdataStr = JSON.parse(localStorage.getItem('userdata'));
+  const userId = userdataStr.user_id;
+  const userData = await Axios(`http://localhost:8000/userinfo/${userId}`);
+  console.log(userData);
+  ;
+  if(userId){
+      const userImg = userData.user_img?userData.user_img:'LeDian.png';
+      return (
+          <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
+              <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
+              會員專區▼</h4>
+          )
+  }else {
+      return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
+  }              
 }
 cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem('userdata'));

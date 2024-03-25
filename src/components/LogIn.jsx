@@ -54,7 +54,6 @@ class Login extends Component {
   render() {
     return (
         <>
-        testtest
         <Helmet>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
@@ -85,7 +84,7 @@ class Login extends Component {
 
 
                 <div className='d-flex me-2 align-items-center'>
-                    {this.loginCheck()}
+                    {/* {this.loginCheck()} */}
                     <div id='memberNav' className='collapse'>
                         <div className='p-2'>
                             <h4 className='headerText text-center my-2' onClick={()=>{window.location="/profile"}}>會員中心</h4><hr />
@@ -397,19 +396,23 @@ logoutClick = async () => {
     this.setState({})
     window.location = "/index"
 }
-loginCheck = () => {
-    const userData = JSON.parse(localStorage.getItem('userdata'));
-    if(userData){
-        const userImg = userData.user_img?userData.user_img:'LeDian.png';
-        return (
-            <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-                <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-                會員專區▼</h4>
-            )
-    }else {
-        return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
-    }              
-}
+// loginCheck = async () => {
+//     const userdataStr = JSON.parse(localStorage.getItem('userdata'));
+//     const userId = userdataStr.user_id;
+//     const userData = await Axios(`/user/${userId}`);
+//     console.log(userId);
+//     ;
+//     if(userId){
+//         const userImg = userData.user_img?userData.user_img:'LeDian.png';
+//         return (
+//             <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
+//                 <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
+//                 會員專區▼</h4>
+//             )
+//     }else {
+//         return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
+//     }              
+// }
 cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem('userdata'));
     if(userData){

@@ -645,7 +645,15 @@ app.post("/forgotPassword", async function (req, res) {
 });
 
 
-
+app.get("/userinfo/:userId", function (req, res) {
+  conn.query(
+    "SELECT * FROM 'users' WHERE user_id = ?;",
+    [req.params.userId],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
 
 // user 是大家共用的路由
 app.get("/user/:id", function (req, res) {
