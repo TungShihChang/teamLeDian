@@ -401,16 +401,11 @@ toggleMenuNav = () => {
     document.getElementById('menuNav').classList.toggle('menuNav');
 }
 logoutClick = async () => {
-    // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-        // 告訴後台使用者要登出
         await Axios.post('http://localhost:8000/logout');
-    
-        
-        //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
         console.error("登出時出錯:", error);
     }
