@@ -15,8 +15,6 @@ class Login extends Component {
     password2: "",
     showToast: false,
     toastMessage: '',
-    userImg: null,
-
   };
     constructor(props) {
         super(props);
@@ -24,7 +22,6 @@ class Login extends Component {
             showLoginForm: true
         };
     }
-    // 根據使用者ID從後端獲取使用者資訊的函數
     fetchUserData = async (userId) => {
       try {
         const response = await Axios.get(`http://localhost:8000/user/${userId}`);
@@ -41,21 +38,6 @@ class Login extends Component {
     };
     componentDidMount() {
       this.setState({ showToast: false });
-      const userData = JSON.parse(localStorage.getItem("userdata"));
-
-
-      if (userData) {
-        Axios.get(`http://localhost:8000/user/${userData.user_id}`)
-          .then((response) => {
-            const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
-            this.setState({ userImg, userData });
-          })
-          .catch((error) => {
-            console.error("Failed to fetch user data:", error);
-          });
-      }
-  
-  
     }
     toggleToast = (message) => {
       this.setState({ toastMessage: message });
@@ -67,11 +49,10 @@ class Login extends Component {
       } else {
         clearTimeout(this.toastTimer);
       }
-    };  
+    };   
   render() {
     return (
         <>
-        testtest
         <Helmet>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
@@ -143,6 +124,7 @@ class Login extends Component {
             </div>
 
         </div>
+
 
 
         <Toast show={this.state.showToast} onClose={this.toggleToast} className="custom-toast position-fixed  p-3">
@@ -419,16 +401,11 @@ toggleMenuNav = () => {
     document.getElementById('menuNav').classList.toggle('menuNav');
 }
 logoutClick = async () => {
-    // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-        // 告訴後台使用者要登出
         await Axios.post('http://localhost:8000/logout');
-    
-        
-        //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
         console.error("登出時出錯:", error);
     }
@@ -437,19 +414,7 @@ logoutClick = async () => {
     this.setState({})
     window.location = "/index"
 }
-// loginCheck = () => {
-//     const userData = JSON.parse(localStorage.getItem('userdata'));
-//     if(userData){
-//         const userImg = userData.user_img?userData.user_img:'LeDian.png';
-//         return (
-//             <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-//                 <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-//                 會員專區▼</h4>
-//             )
-//     }else {
-//         return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊</h4>)
-//     }              
-// }
+
 cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem('userdata'));
     if(userData){
