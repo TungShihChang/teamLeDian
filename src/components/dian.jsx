@@ -25,40 +25,69 @@ class dian extends Component {
   }
 
   componentDidMount() {
-    this.handleNearbyChange("nearby");
+    this.loadPageData();
+  }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userLocation = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-        // console.log("User location:", userLocation);
-        this.setState({ userLocation });
-      },
-      (error) => {
-        console.error("Error getting user location:", error);
-      }
-    );
-
-    this.fetchBrandData();
-
-    const userData = JSON.parse(localStorage.getItem("userdata"));
-
-    if (userData) {
-      axios
-        .get(`http://localhost:8000/user/${userData.user_id}`)
-        .then((response) => {
-          const userImg = response.data.user_img
-            ? response.data.user_img
-            : "LeDian.png";
-          this.setState({ userImg, userData });
-        })
-        .catch((error) => {
-          console.error("Failed to fetch user data:", error);
-        });
+  componentDidUpdate(prevProps) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.loadPageData();
     }
   }
+
+  loadPageData = async (shouldReloadData = true) => {
+    try {
+      const pathname = this.props.location.pathname;
+
+      if (pathname === "/nearby") {
+        await this.handleNearbyChange("nearby");
+      } else if (pathname.startsWith("/option")) {
+        const selectedOption = pathname.split("/")[2];
+        await this.handleOptionChange(selectedOption);
+      } else if (pathname.startsWith("/score")) {
+        const selectedScore = pathname.split("/")[2];
+        await this.handleScoreChange(selectedScore);
+      } else {
+        await this.handleNearbyChange("nearby");
+      }
+
+      await Promise.all([
+        new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              };
+              this.setState({ userLocation }, () => {
+                if (shouldReloadData) {
+                  this.loadPageData(false); // 只在這裡重新加載數據
+                }
+              });
+              resolve();
+            },
+            (error) => {
+              console.error("Error getting user location:", error);
+              resolve();
+            }
+          );
+        }),
+        this.fetchBrandData(),
+      ]);
+
+      const userData = JSON.parse(localStorage.getItem("userdata"));
+      if (userData) {
+        const response = await axios.get(
+          `http://localhost:8000/user/${userData.user_id}`
+        );
+        const userImg = response.data.user_img
+          ? response.data.user_img
+          : "LeDian.png";
+        this.setState({ userImg, userData });
+      }
+    } catch (error) {
+      console.error("Error in loadPageData:", error);
+    }
+  };
 
   fetchBrandData = async () => {
     try {
@@ -99,35 +128,45 @@ class dian extends Component {
       }
 
       const response = await axios.get(url);
-      const contentWithDistance = response.data
-        .map((item) => {
-          if (!item || !item.branch_latitude || !item.branch_longitude) {
-            console.log(
-              "Item is null or missing latitude/longitude properties:",
-              item
-            );
+
+      // 篩選並過濾數據
+      const validData = response.data.filter(
+        (item) => item && item.branch_latitude && item.branch_longitude
+      );
+
+      // 使用Promise.all並行計算距離
+      const contentWithDistance = await Promise.all(
+        validData.map(async (item) => {
+          if (!item.branch_latitude || !item.branch_longitude) {
+            console.log("Item is missing latitude/longitude properties:", item);
             return null;
           }
 
           const distance = this.calculateDistance(
-            this.state.userLocation.latitude,
-            this.state.userLocation.longitude,
+            this.state.userLocation?.latitude,
+            this.state.userLocation?.longitude,
             item.branch_latitude,
             item.branch_longitude
           );
 
-          // 只有當距離小於1.5公里時才將該地點添加到狀態中
-          if (parseFloat(distance) < 1.5) {
+          if (parseFloat(distance) <= 1.5) {
+            // 篩選距離小於1.5公里的店家
             return {
               ...item,
               distance: distance,
             };
+          } else {
+            return null;
           }
-          return null; // 如果距離大於等於1.5公里，則返回 null
         })
-        .filter((item) => item !== null); // 去除距離大於等於1.5公里的地點
+      );
 
-      this.setState({ selectedNearby, content: contentWithDistance });
+      // 移除距離為 null 的項目
+      const filteredContent = contentWithDistance.filter(
+        (item) => item !== null
+      );
+
+      this.setState({ selectedNearby, content: filteredContent });
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -257,7 +296,7 @@ class dian extends Component {
 
   render() {
     const { selectedOption, content, selectedNearby } = this.state;
-    const shuffledContent = content.sort(() => Math.random() - 0.5);
+    const sortedContent = content.sort((a, b) => a.distance - b.distance);
     // let distance = "";
 
     return (
@@ -1016,7 +1055,7 @@ class dian extends Component {
               </div>
               <div className="col-sm-7 col-md-8 col-lg-9 col-xxl-10 row choose_right justify-content-center mx-auto">
                 {/* 台中探索、尋星饗宴、星評優選 */}
-                {shuffledContent.map((item, index) => {
+                {sortedContent.map((item, index) => {
                   if (
                     !item ||
                     !item.branch_latitude ||
