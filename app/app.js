@@ -877,9 +877,62 @@ app.get('/profile/order_details/:orderId', (req, res) => {
 
 
 
+//新增條碼
+app.post('/user/:userId/barcode', (req, res) => {
+  const userId = req.params.userId;
+  const { barcodeValue } = req.body;
+  conn.query('UPDATE users SET barcode = ? WHERE user_id = ?', [barcodeValue, userId], (error, results) => {
+    if (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+    res.json({ message: 'Barcode saved successfully' });
+  });
+});
+//更新條碼
+app.put('/user/:userId/barcode', (req, res) => {
+  const userId = req.params.userId;
+  const { barcode } = req.body;
+  conn.query('UPDATE users SET barcode = ? WHERE user_id = ?', [barcode, userId], (error, results) => {
+    if (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+    res.json({ message: 'Barcode updated successfully' });
+  });
+});
+//刪除條碼
+app.delete('/user/:userId/barcode', (req, res) => {
+  const userId = req.params.userId;
+  conn.query('UPDATE users SET barcode = NULL WHERE user_id = ?', [userId], (error, results) => {
+    if (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+    res.json({ message: 'Barcode deleted successfully' });
+  });
+});
 
-
-
+// GET 載具資料
+app.get('/user/:userId/barcode', (req, res) => {
+  const userId = req.params.userId;
+  conn.query('SELECT barcode FROM users WHERE user_id = ?', [userId], (error, results) => {
+    if (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+    if (results.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    const barcodeData = results[0];
+    res.json(barcodeData);
+  });
+});
 
 
 

@@ -50,6 +50,9 @@ class Login extends Component {
         clearTimeout(this.toastTimer);
       }
     };   
+    handleSubmit = (e) => {
+      e.preventDefault();
+    }
   render() {
     return (
         <>
@@ -216,7 +219,7 @@ class Login extends Component {
 
         {this.state.showLoginForm && (
             <div className="email-login">
-              <form className="container" action="/login" method="post">
+               <form onSubmit={this.handleSubmit} className="container" action="/login" method="post">
                 <h5 className="text-center welcomeledian m-3">
                   歡迎使用樂點！線上訂餐系統
                 </h5>
@@ -454,8 +457,8 @@ cartMenuClick = () => {
     try {
         const response = await Axios.post('http://localhost:8000/signup', dataToServer);
         console.log("Response from backend:", response.data);
-        window.location = '/'
-        this.setState({ showToast: true, toastMessage: "登入成功" });
+        window.location = '/Login'
+        this.setState({ showToast: true, toastMessage: "註冊成功" });
     } catch (error) {
       console.error("Error:", error);
       if (error.response.status === 400) {

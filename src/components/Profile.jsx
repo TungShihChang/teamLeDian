@@ -10,6 +10,7 @@ import { GiCancel } from "react-icons/gi";
 import { Helmet } from "react-helmet";
 import { Modal } from 'bootstrap';
 import Axios from "axios";
+import { Toast } from 'react-bootstrap';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -44,9 +45,13 @@ class Profile extends Component {
       selectedOrder: null,
       selectedOrderDetails: null,
       userImg: null,
+      showToast: false,
+      toastMessage: '',
     };
   }
+
   componentDidMount() {
+    this.setState({ showToast: false });
     window.addEventListener("resize", this.handleWindowResize);
     const userData = JSON.parse(localStorage.getItem("userdata"));
     if (userData) {
@@ -127,7 +132,20 @@ class Profile extends Component {
       });
     }
   }
-
+  toggleToast = (message) => {
+    this.setState({ toastMessage: message });
+    this.setState((prevState) => ({ showToast: !prevState.showToast }));
+  
+    // 如果 showToast 為 true，啟動計時器；如果 showToast 為 false，清除計時器
+    if (!this.state.showToast) {
+      this.toastTimer = setTimeout(() => {
+        this.setState({ showToast: false });
+      }, 3000);
+    } else {
+      clearTimeout(this.toastTimer);
+    }
+  };
+  
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleWindowResize);
   }
@@ -189,30 +207,29 @@ class Profile extends Component {
       },
     }));
   };
+
   handleForm2Submit = (event) => {
     event.preventDefault();
-
+  
     const form = event.currentTarget;
-
+  
     if (!form.checkValidity()) {
       event.stopPropagation();
       this.setState({ form2Validated: true });
       return;
     }
-
+  
     const { userData } = this.state;
     const userId = userData.user_id;
     const oldPassword = form.elements.inputOldPassword.value;
     const newPassword = form.elements.inputNewPassword.value;
     const newPassword2 = form.elements.inputNewPassword2.value;
-
+  
     if (newPassword !== newPassword2) {
-      alert("新密碼和再次輸入新密碼不匹配，請重新輸入。");
+      this.toggleToast("新密碼和再次輸入新密碼不匹配，請重新輸入。");
       return;
     }
-    console.log("Old Password:", oldPassword);
-    console.log("New Password:", newPassword);
-    console.log("Confirm New Password:", newPassword2);
+  
     Axios.post("http://localhost:8000/verifyPassword", { userId, oldPassword })
       .then((response) => {
         Axios.post("http://localhost:8000/changePassword", {
@@ -220,18 +237,19 @@ class Profile extends Component {
           newPassword,
         })
           .then((response) => {
-            alert("密碼修改成功");
+            this.toggleToast("密碼修改成功");
           })
           .catch((error) => {
             console.error("Failed to change password:", error);
-            alert("密碼修改失敗 請稍後再試。");
+            this.toggleToast("密碼修改失敗 請稍後再試。");
           });
       })
       .catch((error) => {
         console.error("Failed to verify old password:", error);
-        alert("舊密碼驗證失敗。");
+        this.toggleToast("舊密碼驗證失敗。");
       });
   };
+  
 
   handleStarClick = (value) => {
     this.setState({ rating: value });
@@ -463,7 +481,12 @@ class Profile extends Component {
             </div>
 
         </div>
-
+        <Toast show={this.state.showToast} onClose={this.toggleToast} className="custom-toast position-fixed  p-3">
+        <div class="d-flex">
+          <Toast.Body>{this.state.toastMessage}</Toast.Body>
+          <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </Toast>
         <div
           className="modal fade"
           id="Orders_staticBackdrop"
@@ -1197,7 +1220,7 @@ class Profile extends Component {
                               <div className="card-header fw-bold">完成</div>
                               <div className="text-center mt-3">
                                 <img
-                                  src="./img/Member_Area/LeDian_LOGO-05.png"
+                                  src={`/img/logo/${order.brand_id}.png`}
                                   className="card-img-top w-25 rounded-circle border"
                                   alt="品牌LOGO"
                                 />
@@ -1247,6 +1270,8 @@ class Profile extends Component {
                         </div>
                       </div>
                     </div>
+
+
                   </div>
                 </div>
               </div>
