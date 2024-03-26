@@ -15,8 +15,8 @@ import { PiCoins } from "react-icons/pi";
 import { GiCancel } from "react-icons/gi";
 import DateTimePicker from "./dateTimePicker";
 import axios from "axios";
-import { HmacSHA256 } from "crypto-js";
-import Base64 from "crypto-js/enc-base64";
+// import { HmacSHA256 } from "crypto-js";
+// import Base64 from "crypto-js/enc-base64";
 
 class cartPay extends Component {
   constructor(props) {
@@ -28,16 +28,22 @@ class cartPay extends Component {
       showPointerItem: false,
       bag_isChecked: false,
       discount_isChecked: false,
-      remainingPoints: 20, //剩餘點數
+      e_bill_isChecked: false,
+      // remainingPoints: 20, //剩餘點數
       usePoninter: 0,
       bagQuantity: 0,
-      quantity: 0,
-      sumPrice: 0,
-      lastPrice: 0,
-      payMethod: 0,
+      // quantity: 0,
+      // sumPrice: 0,
+      // lastPrice: 0,
+      // payMethod: 0,
       e_bill_text: "", //載具文字
       dbcarts: [
         {
+          // brand_id: "2",
+          // branch_name: "",
+          // branch_address: "",
+          // branch_phone: "",
+          // brand_name: "",
           item_img: "1_5",
           item_ingredient: "",
           item_id: 1,
@@ -86,11 +92,11 @@ class cartPay extends Component {
         },
       ],
 
-      productCkeck: {
-        size: "",
-        temperatures: "",
-        sugar: "",
-      },
+      // productCkeck: {
+      //   size: "",
+      //   temperatures: "",
+      //   sugar: "",
+      // },
     };
   }
 
@@ -108,7 +114,6 @@ class cartPay extends Component {
         steps[currentStep - 1].classList.add("active");
       }
     }
-    console.log(this.state);
   };
 
   previousStep = () => {
@@ -116,9 +121,28 @@ class cartPay extends Component {
     if (currentStep > 1) {
       this.setState({ currentStep: currentStep - 1 });
     }
-    // this.sendMessageToParent();
   };
-
+  amountCalculation = () => {
+    let newState = { ...this.state };
+    let quantity = 0; //飲料數量
+    let sumPrice = 0; //加總價格
+    console.log("dbcarts:", newState.dbcarts);
+    // if (newState.dbcarts[0].item_img === "無") {
+    //   newState.dbcarts[0].item_img = "none";
+    // }
+    newState.dbcarts.forEach((item) => {
+      quantity += item.item_quantity;
+      sumPrice += item.total_price * item.item_quantity;
+    });
+    // console.log("sumPrice", sumPrice);
+    newState.quantity = quantity;
+    newState.sumPrice = sumPrice;
+    newState.lastPrice =
+      sumPrice - newState.usePoninter + newState.bagQuantity * 2;
+    // console.log("寒士", newState);
+    this.setState(newState);
+  };
+  //點數輸入框
   togglePointerItem = () => {
     this.setState((prevState) => ({
       showPointerItem: !prevState.showPointerItem,
@@ -128,10 +152,7 @@ class cartPay extends Component {
     let newState;
     newState = this.state;
     newState.discount_isChecked = !newState.discount_isChecked;
-    console.log(newState);
-    // if(newState.discount_isChecked){
-
-    // }
+    // console.log(newState);
     this.setState(newState);
   };
 
@@ -143,6 +164,7 @@ class cartPay extends Component {
     navigator.clipboard.writeText(copyText.value);
   };
 
+  //使用點數
   pointerChange = (e) => {
     if (e.target.value > this.state.remainingPoints) {
       swal({
@@ -176,12 +198,14 @@ class cartPay extends Component {
         num += item.item_quantity;
       });
     } else {
-      newState.lastPrice = newState.lastPrice - newState.bagQuantity * 2;
+      newState.bagPrice = newState.bagQuantity * 2;
+      newState.lastPrice = newState.lastPrice - newState.bagPrice;
       this.setState(newState);
       return;
     }
     newState.bagQuantity = Math.ceil(num / 4);
-    newState.lastPrice = newState.lastPrice + newState.bagQuantity * 2;
+    newState.bagPrice = newState.bagQuantity * 2;
+    newState.lastPrice = newState.lastPrice + newState.bagPrice;
     this.setState(newState);
   };
 
@@ -208,7 +232,6 @@ class cartPay extends Component {
     }
     this.setState(newState);
   };
-
   phone_change = (e) => {
     let newState = { ...this.state };
     newState.userinfo.phone = e.target.value;
@@ -259,13 +282,11 @@ class cartPay extends Component {
     this.setState(newState);
   };
 
-  //載具
-  e_bill_change = (e) => {
-    let newState = { ...this.state };
-    newState.e_bill_text = e.target.value;
-    this.setState(newState);
-  };
-
+  // e_bill_isChecked = () => {
+  //   let newSate = { ...this.state };
+  //   console.log(newSate.e_bill_isChecked);
+  //   this.setState(newSate);
+  // };
   //檢查是否選取時間
   checkedTime = () => {
     if (!this.state.selectedDate) {
@@ -298,31 +319,6 @@ class cartPay extends Component {
     this.setState(newState);
   };
 
-  //line pay
-
-  // createSignature = (uri, linePayBody) => {
-  //   const SecretKey = "085beec8f76f130cf12838cfeb1835f2";
-  //   const LINEPAY_CHANNEL_ID = 2004276099;
-  //   const LINEPAY_VERSION = "v3";
-  //   const LINEPAY_SITE = "https://sandbox-api-pay.line.me";
-
-  //   let nonce = parseInt(new Date().getTime() / 1000);
-  //   const string = `${SecretKey}/${LINEPAY_VERSION}${uri}${JSON.stringify(
-  //     linePayBody
-  //   )}${nonce}`;
-
-  //   const signature = Base64.stringify(HmacSHA256(string, SecretKey));
-  //   console.log(linePayBody, signature);
-  //   const headers = {
-  //     "Content-Type": "application/json",
-  //     "X-LINE-ChannelId": LINEPAY_CHANNEL_ID,
-  //     "X-LINE-Authorization-Nonce": nonce,
-  //     "X-LINE-Authorization": signature,
-  //   };
-  //   console.log("headersssssss" + headers);
-  //   return headers;
-  // };
-
   //提交訂單
   handleButtonClick = async () => {
     let newSate = { ...this.state };
@@ -346,6 +342,7 @@ class cartPay extends Component {
     //datails迴圈整理
     let serverData = {
       user_id: 1,
+      brand_id: this.state.dbcarts[0].brand_id,
       brand_name: this.state.dbcarts[0].brand_name,
       branch_name: this.state.dbcarts[0].branch_name,
       orders_total: this.state.lastPrice,
@@ -357,82 +354,85 @@ class cartPay extends Component {
         ? `載具-${this.state.e_bill_text}`
         : "紙本發票",
       orders_pick_up: this.state.pickupTime,
+      updatedpoints: 0,
       orders_status: 1,
       payment_status: Number(this.state.payMethod) ? 1 : 0,
       updatetime: new Date(),
       createtime: new Date(),
       details: detailsdata,
     };
-    this.nextStep();
-    // console.log("serverData:", serverData);
     let config = {
       headers: {
         "content-type": "application/json",
       },
     };
     console.log(serverData);
-
-    await axios
-      .post("http://localhost:8000/cartPay", JSON.stringify(serverData), config)
-      .then((res) => {
-        console.log(res.data);
-        // window.location.href = res.data;
-        window.location.replace(res.data);
-      })
-      .then(async (res) => {
-        console.log(res);
-        await axios.get("http://localhost:8000/linepay/confirm");
-      });
-    // .then(async (res) => {
-    //   console.log(res);
-
-    // });
-    // console.log("web", linePayRes?.data?.info.paymentUrl.web); //'https://sandbox-web-pay.line.me/web/payment/wait?transactionReserveId=RUpIVkRJQ0lyR2FBL3hzRUFQVm5XaEFxSHlXWGlHWjVmUTVVdUR2ZHg4YUJuU0NmSGpFMzdWdU1VdW41UlhEbA',
-    // console.log("Apple123", linePayRes.data);
-
-    //   // //串接linepay
-    // await axios.post(
-    //   "http://localhost:8000/test0231/783743",
-    //   JSON.stringify(serverData),
-    //   config
-    // );
-    // };
+    if (serverData.terms_of_payment === "現金") {
+      this.nextStep();
+      await axios.post(
+        "http://localhost:8000/cartcashpay",
+        JSON.stringify(serverData),
+        config
+      );
+    }
+    if (serverData.terms_of_payment === "Line Pay") {
+      //LINEPAY 串接
+      await axios
+        .post(
+          "http://localhost:8000/cartlinepay",
+          JSON.stringify(serverData),
+          config
+        )
+        .then((res) => {
+          console.log(res.data);
+          // window.location.href = res.data;
+          window.location.replace(res.data);
+        });
+    }
   };
 
   ///訂單確認
   //付款方式
   payMethod_change = (e) => {
     let newSate = { ...this.state };
-    // console.log(newSate);
     newSate.payMethod = Number(e.target.value);
-    // console.log(newSate.payMethod);
     this.setState(newSate);
-    // console.log(this.state);
+  };
+
+  //載具
+  e_bill_change = (e) => {
+    let newState = { ...this.state };
+    newState.e_bill_text = e.target.value;
+
+    this.setState(newState);
   };
 
   //發票
   bill_change = (e) => {
     let newSate = { ...this.state };
     newSate.invoicing_method = Number(e.target.value);
-    console.log(e.target.value);
-    if (!newSate.invoicing_method) {
-      newSate.e_bill_text = "";
+    if (newSate.invoicing_method) {
+      newSate.e_bill_isChecked = true;
+    } else {
+      newSate.e_bill_isChecked = false;
     }
     this.setState(newSate);
-    // console.log(this.state.receipt);
   };
 
   //商品編輯
   product_edit = async (id, index) => {
     console.log(id);
     // alert(index);
-    let newSate = { ...this.state };
+    let newState = { ...this.state };
     let result = await axios.get(`http://localhost:8000/itemedit/${id}`);
-    newSate.dbcarts.item_id = id;
-    newSate.productEdit = result.data;
-    newSate.productEdit[5].catrs_index = index;
-    console.log("productEdit:", newSate.productEdit);
-    this.setState(newSate);
+    newState.dbcarts.item_id = id;
+    newState.productEdit = result.data;
+    newState.productEdit[5].catrs_index = index;
+    if (newState.productEdit[7].product.product_img === "無") {
+      newState.productEdit[7].product.product_img = "none";
+    }
+    console.log("productEdit:", newState.productEdit);
+    this.setState(newState);
   };
 
   //尺寸
@@ -446,7 +446,6 @@ class cartPay extends Component {
     );
     this.setState(newState);
     console.log(newState);
-    // console.log(newState);
   };
   //甜度
   sugar_change = (e) => {
@@ -477,7 +476,6 @@ class cartPay extends Component {
       newState.productEdit[8].cats_item.total_price =
         newState.productEdit[8].cats_item.item_price +
         newState.productEdit[8].cats_item.ingredient_price;
-
       this.setState(newState);
     } else {
       let removedIngredient = e.target.value;
@@ -495,6 +493,7 @@ class cartPay extends Component {
         newState.productEdit[8].cats_item.ingredient_price;
       this.setState(newState);
     }
+    console.log(this.state);
   };
 
   //數量增加
@@ -517,69 +516,84 @@ class cartPay extends Component {
   update_cart = async (index) => {
     alert("更新" + index);
     let newState = { ...this.state };
-
     //更新畫面
-    newState.dbcarts[index].item_quantity =
-      this.state.productEdit[8].cats_item.item_quantity;
-    newState.dbcarts[index].item_size =
-      this.state.productEdit[8].cats_item.item_size;
-    newState.dbcarts[index].item_sugar =
-      this.state.productEdit[8].cats_item.item_sugar;
-    newState.dbcarts[index].item_ingredient =
-      this.state.productEdit[8].cats_item.item_ingredient;
+    let updata = [
+      "item_quantity",
+      "item_size",
+      "item_sugar",
+      "item_ingredient",
+    ];
+    //更新
+    updata.forEach(
+      (element) =>
+        (newState.dbcarts[index][element] =
+          this.state.productEdit[8].cats_item[element])
+    );
     newState.dbcarts[index].total_price =
       this.state.productEdit[8].cats_item.item_price +
       this.state.productEdit[8].cats_item.ingredient_price;
-
-    let quantity = 0;
-    let sumPrice = 0;
-    newState.dbcarts.forEach((item) => {
-      console.log("item", item);
-      quantity += Number(item.item_quantity);
-      sumPrice += item.total_price * item.item_quantity;
-    });
-    console.log(quantity);
-
-    newState.quantity = quantity;
-    newState.sumPrice = sumPrice;
-    newState.lastPrice = sumPrice;
-
-    console.log("new", newState);
     this.setState(newState);
+    this.amountCalculation();
 
-    let item_sum = 0;
-    let price_sum = 0;
-    newState.dbcarts.forEach((item) => {
-      item_sum += item.item_quantity;
-      price_sum += item.total_price * item.item_quantity;
-    });
-    console.log(item_sum);
-    newState.quantity = item_sum;
-    newState.sumPrice = price_sum;
-    newState.lastPrice =
-      price_sum - this.state.usePoninter + this.state.bagQuantity * 2;
+    // newState.dbcarts[index].item_quantity =
+    //   this.state.productEdit[8].cats_item.item_quantity;
+    // newState.dbcarts[index].item_size =
+    //   this.state.productEdit[8].cats_item.item_size;
+    // newState.dbcarts[index].item_sugar =
+    //   this.state.productEdit[8].cats_item.item_sugar;
+    // newState.dbcarts[index].item_ingredient =
+    //   this.state.productEdit[8].cats_item.item_ingredient;
+    // newState.dbcarts[index].total_price =
+
+    // let quantity = 0;
+    // let sumPrice = 0;
+    // newState.dbcarts.forEach((item) => {
+    //   console.log("item", item);
+    //   quantity += Number(item.item_quantity);
+    //   sumPrice += item.total_price * item.item_quantity;
+    // });
+    // console.log(quantity);
+
+    // newState.quantity = quantity;
+    // newState.sumPrice = sumPrice;
+    // newState.lastPrice = sumPrice;
+
+    // console.log("new", newState);
+    // this.setState(newState);
+
+    // let item_sum = 0;
+    // let price_sum = 0;
+    // newState.dbcarts.forEach((item) => {
+    //   item_sum += item.item_quantity;
+    //   price_sum += item.total_price * item.item_quantity;
+    // });
+    // console.log(item_sum);
+    // newState.quantity = item_sum;
+    // newState.sumPrice = price_sum;
+    // newState.lastPrice =
+    //   price_sum - this.state.usePoninter + this.state.bagQuantity * 2;
 
     //寫入資料庫
-    let serverData = {
-      item_quantity: this.state.productEdit[8].cats_item.item_quantity,
-      item_size: this.state.productEdit[8].cats_item.item_size,
-      item_sugar: this.state.productEdit[8].cats_item.item_sugar,
-      item_ingredient: this.state.productEdit[8].cats_item.item_ingredient,
-      ingredient_price: this.state.productEdit[8].cats_item.ingredient_price,
-      item_price: this.state.productEdit[8].cats_item.item_price,
-      total_price: this.state.productEdit[8].cats_item.total_price,
-    };
-    let config = {
-      headers: {
-        "content-type": "application/json",
-      },
-    };
-    console.log(this.state.dbcarts[index].item_id);
-    await axios.patch(
-      `http://localhost:8000/itemedit/${this.state.dbcarts[index].item_id}`,
-      serverData,
-      config
-    );
+    // let serverData = {
+    //   item_quantity: this.state.productEdit[8].cats_item.item_quantity,
+    //   item_size: this.state.productEdit[8].cats_item.item_size,
+    //   item_sugar: this.state.productEdit[8].cats_item.item_sugar,
+    //   item_ingredient: this.state.productEdit[8].cats_item.item_ingredient,
+    //   ingredient_price: this.state.productEdit[8].cats_item.ingredient_price,
+    //   item_price: this.state.productEdit[8].cats_item.item_price,
+    //   total_price: this.state.productEdit[8].cats_item.total_price,
+    // };
+    // let config = {
+    //   headers: {
+    //     "content-type": "application/json",
+    //   },
+    // };
+    // console.log(this.state.dbcarts[index].item_id);
+    // await axios.patch(
+    //   `http://localhost:8000/itemedit/${this.state.dbcarts[index].item_id}`,
+    //   serverData,
+    //   config
+    // );
   };
 
   //刪除商品
@@ -767,7 +781,7 @@ class cartPay extends Component {
                               >
                                 <img
                                   className="icon-join"
-                                  src="/img/icon/add-friend 1.png"
+                                  src="/img/icon/addjoin.png"
                                   alt="add-friend"
                                 />
                                 <span>揪團</span>
@@ -1336,6 +1350,7 @@ class cartPay extends Component {
                                                   name="sugariness"
                                                   id="lessSugar"
                                                   value="甜度固定"
+                                                  checked
                                                 ></input>
                                                 <label
                                                   className="form-check-label"
@@ -1891,9 +1906,11 @@ class cartPay extends Component {
                                 type="radio"
                                 name="invoice"
                                 id="bill"
-                                defaultChecked
                                 value="0"
                                 onChange={this.bill_change}
+                                defaultChecked={
+                                  this.state.userinfo.barcode ? false : true
+                                }
                               />
                               <label htmlFor="bill" className="text-des">
                                 紙本發票
@@ -1907,20 +1924,26 @@ class cartPay extends Component {
                                 id="e-bill"
                                 value="1"
                                 onChange={this.bill_change}
+                                defaultChecked={
+                                  this.state.userinfo.barcode ? true : false
+                                }
                               />
                               <label htmlFor="e-bill" className="text-des">
                                 載具
                               </label>
                             </div>
-                            <div className="col-10">
-                              <input
-                                className="ms-2 mt-3 form-control input-box"
-                                type="text"
-                                value={this.state.e_bill_text}
-                                // readOnly
-                                onChange={this.e_bill_change}
-                              />
-                            </div>
+
+                            {this.state.e_bill_isChecked && (
+                              <div className="col-10">
+                                <input
+                                  className="ms-2 mt-3 form-control input-box"
+                                  type="text"
+                                  value={this.state.e_bill_text}
+                                  // readOnly
+                                  onChange={this.e_bill_change}
+                                />
+                              </div>
+                            )}
                           </div>
 
                           <div className="row d-flex justify-content-center mt-5">
@@ -1973,7 +1996,7 @@ class cartPay extends Component {
                                   <span className="small-text p-2">
                                     <img
                                       className="me-2"
-                                      src="/img/icon/exclamation 1.png"
+                                      src="/img/icon/exclamation.png"
                                       alt="icnimg"
                                     />
                                     預計取貨時間會依門市狀況調整
@@ -2309,37 +2332,40 @@ class cartPay extends Component {
       );
     }
   };
+
   componentDidMount = async () => {
     console.log(this.props.match.params.id);
     let newState = { ...this.state };
+
+    //撈取使用者資訊
     let user = await axios.get("http://localhost:8000/user/1");
     newState.userinfo = user.data;
     newState.e_bill_text = newState.userinfo.barcode;
-    console.log("userinfo", newState.userinfo);
+    newState.e_bill_isChecked = newState.userinfo.barcode ? true : false;
+
+    //撈取購物車
     let result = await axios.get(
       `http://localhost:8000/cartPay/${this.props.match.params.id}`
     );
-    console.log(result);
-    let quantity = 0;
-    let sumPrice = 0;
     newState.dbcarts = result.data;
+    let quantity = 0; //飲料數量
+    let sumPrice = 0; //加總價格
     console.log("dbcarts:", newState.dbcarts);
-
+    if (newState.dbcarts[0].item_img === "無") {
+      newState.dbcarts[0].item_img = "none";
+    }
     newState.dbcarts.forEach((item) => {
       quantity += item.item_quantity;
-      sumPrice +=
-        (item.item_price + item.ingredient_price) * item.item_quantity;
+      sumPrice += item.total_price * item.item_quantity;
     });
-    console.log("sumPrice", sumPrice);
+    // console.log("sumPrice", sumPrice);
     newState.quantity = quantity;
     newState.sumPrice = sumPrice;
-    newState.lastPrice = sumPrice;
-
+    newState.bagPrice = newState.bagQuantity * 2;
+    newState.lastPrice = sumPrice - newState.usePoninter + newState.bagPrice;
+    // console.log(newState.dbcarts);
     this.setState(newState);
     console.log("dbcart", this.state.dbcarts);
   };
 }
 export default cartPay;
-
-// ingredient_price
-//item_ingredient

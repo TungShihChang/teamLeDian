@@ -658,7 +658,7 @@ app.get("/user/:id", function (req, res) {
         return res.status(404).json({ error: "找不到用户" });
       }
       const userData = rows[0];
-      console.log("用户数据:", userData);
+      // console.log("用户数据:", userData);
       res.json(userData);
     }
   );
@@ -1191,36 +1191,14 @@ app.get("/branchinfo/:branchid", function (req, res) {
 //     }
 //   );
 // });
-const SecretKey = "085beec8f76f130cf12838cfeb1835f2";
-const LINEPAY_CHANNEL_ID = 2004276099;
-const LINEPAY_VERSION = "v3";
-const LINEPAY_SITE = "https://sandbox-api-pay.line.me";
-function createSignature(uri, linePayBody) {
-  let nonce = parseInt(new Date().getTime() / 1000);
-  const string = `${SecretKey}/${LINEPAY_VERSION}${uri}${JSON.stringify(
-    linePayBody
-  )}${nonce}`;
-  const signature = Base64.stringify(HmacSHA256(string, SecretKey));
-  console.log(linePayBody, signature);
-  const headers = {
-    "Content-Type": "application/json",
-    "X-LINE-ChannelId": LINEPAY_CHANNEL_ID,
-    "X-LINE-Authorization-Nonce": nonce,
-    "X-LINE-Authorization": signature,
-  };
-  console.log("headersssssss" + headers);
-  return headers;
-}
 
-let transactionId;
-let paymentAccessToken;
-let orderId = parseInt(new Date().getTime() / 1000);
-app.post("/cartPay", function (req, res) {
+app.post("/cartcashpay", function (req, res) {
   console.log("ok");
   console.log(req.body);
 
   const orderInfo = {
     user_id: req.body.user_id,
+    brand_id: req.body.brand_id,
     branch_name: req.body.branch_name,
     brand_name: req.body.brand_name,
     orders_total: req.body.orders_total,
@@ -1232,6 +1210,7 @@ app.post("/cartPay", function (req, res) {
     orders_status: req.body.orders_status,
     payment_status: req.body.payment_status,
     orders_pick_up: req.body.orders_pick_up,
+    updatedpoints: req.body.updatedpoints,
     updatetime: onTime(),
     createtime: onTime(),
   };
@@ -1240,9 +1219,10 @@ app.post("/cartPay", function (req, res) {
   let orders_id;
   console.log(orderInfo);
   conn.query(
-    "INSERT INTO orders (user_id, branch_name,brand_name ,orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter,orders_status, payment_status, orders_pick_up,updatetime, createtime) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)",
+    "INSERT INTO orders (user_id, brand_id,branch_name,brand_name ,orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter,orders_status, payment_status,updatedpoints,orders_pick_up,updatetime, createtime) VALUES (?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)",
     [
       orderInfo.user_id,
+      orderInfo.brand_id,
       orderInfo.branch_name,
       orderInfo.brand_name,
       orderInfo.orders_total,
@@ -1251,8 +1231,9 @@ app.post("/cartPay", function (req, res) {
       orderInfo.invoicing_method,
       orderInfo.orders_bag_num,
       orderInfo.usePoninter,
-      orderInfo.orders_status,
       orderInfo.payment_status,
+      orderInfo.orders_status,
+      orderInfo.updatedpoints,
       orderInfo.orders_pick_up,
       orderInfo.updatetime,
       orderInfo.createtime,
@@ -1284,7 +1265,119 @@ app.post("/cartPay", function (req, res) {
 
         console.log(neworderDetails);
         conn.query(
-          "INSERT INTO order_details (orders_id, details_name, details_size, details_sugar, details_mperatures, details_ingredient, details_amount, details_quantity, details_total, updatetime, createtime) VALUES  ?",
+          "INSERT INTO order_details (orders_id, details_name, details_size, details_sugar, details_mperatures, details_ingredient, details_amount, details_quantity, details_total,updatetime, createtime) VALUES  ?",
+          [neworderDetails],
+          (err, result) => {
+            if (err) {
+              console.log(JSON.stringify(err));
+            } else {
+              console.log("成功寫入訂單資訊、明細");
+            }
+          }
+        );
+      }
+    }
+  );
+});
+
+//串接
+const SecretKey = "085beec8f76f130cf12838cfeb1835f2";
+const LINEPAY_CHANNEL_ID = 2004276099;
+const LINEPAY_VERSION = "v3";
+const LINEPAY_SITE = "https://sandbox-api-pay.line.me";
+let orders = {};
+function createSignature(uri, linePayBody) {
+  let nonce = parseInt(new Date().getTime() / 1000);
+  const string = `${SecretKey}/${LINEPAY_VERSION}${uri}${JSON.stringify(
+    linePayBody
+  )}${nonce}`;
+  const signature = Base64.stringify(HmacSHA256(string, SecretKey));
+  console.log(linePayBody, signature);
+  const headers = {
+    "Content-Type": "application/json",
+    "X-LINE-ChannelId": LINEPAY_CHANNEL_ID,
+    "X-LINE-Authorization-Nonce": nonce,
+    "X-LINE-Authorization": signature,
+  };
+  console.log("headersssssss" + headers);
+  return headers;
+}
+
+let orderId = parseInt(new Date().getTime() / 1000);
+app.post("/cartlinepay", function (req, res) {
+  console.log("ok");
+  console.log(req.body);
+
+  const orderInfo = {
+    user_id: req.body.user_id,
+    brand_id: req.body.brand_id,
+    branch_name: req.body.branch_name,
+    brand_name: req.body.brand_name,
+    orders_total: req.body.orders_total,
+    orders_bag: req.body.orders_bag,
+    terms_of_payment: req.body.terms_of_payment,
+    invoicing_method: req.body.invoicing_method,
+    orders_bag_num: req.body.orders_bag_num,
+    usePoninter: req.body.usePoninter,
+    orders_status: req.body.orders_status,
+    payment_status: req.body.payment_status,
+    orders_pick_up: req.body.orders_pick_up,
+    updatedpoints: req.body.updatedpoints,
+    updatetime: onTime(),
+    createtime: onTime(),
+  };
+  const orderDetails = req.body.details;
+  let neworderDetails;
+  let orders_id;
+  console.log(orderInfo);
+  conn.query(
+    "INSERT INTO orders (user_id, brand_id,branch_name,brand_name ,orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter,orders_status, payment_status,updatedpoints,orders_pick_up,updatetime, createtime) VALUES (?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)",
+    [
+      orderInfo.user_id,
+      orderInfo.brand_id,
+      orderInfo.branch_name,
+      orderInfo.brand_name,
+      orderInfo.orders_total,
+      orderInfo.orders_bag,
+      orderInfo.terms_of_payment,
+      orderInfo.invoicing_method,
+      orderInfo.orders_bag_num,
+      orderInfo.usePoninter,
+      orderInfo.payment_status,
+      orderInfo.orders_status,
+      orderInfo.updatedpoints,
+      orderInfo.orders_pick_up,
+      orderInfo.updatetime,
+      orderInfo.createtime,
+    ],
+    (err, results) => {
+      if (err) {
+        res.send(JSON.stringify(err));
+      } else {
+        console.log("Inserted successfully.");
+        console.log("Results:", results);
+
+        orders_id = results.insertId;
+        neworderDetails = orderDetails.map((item) => {
+          item.orders_id = orders_id;
+          return [
+            item.orders_id,
+            item.details_name,
+            item.details_size,
+            item.details_sugar,
+            item.details_mperatures,
+            item.details_ingredient,
+            item.details_amount,
+            item.details_quantity,
+            item.details_total,
+            onTime(),
+            onTime(),
+          ];
+        });
+
+        console.log(neworderDetails);
+        conn.query(
+          "INSERT INTO order_details (orders_id, details_name, details_size, details_sugar, details_mperatures, details_ingredient, details_amount, details_quantity, details_total,updatetime, createtime) VALUES  ?",
           [neworderDetails],
           (err, result) => {
             if (err) {
@@ -1296,8 +1389,6 @@ app.post("/cartPay", function (req, res) {
                 `SELECT * FROM  orders where orders_id=${orders_id}`,
                 [],
                 async (err, rows) => {
-                  let orders = {};
-
                   orderDate = {
                     amount: rows[0].orders_total,
                     currency: "TWD",
@@ -1321,12 +1412,11 @@ app.post("/cartPay", function (req, res) {
                   } else {
                     const order = orderDate;
                     orders[order.orderId] = order;
-
                     const linePayBody = {
                       ...order,
                       redirectUrls: {
-                        confirmUrl: "https://localhost:3000/linepay/confirm",
-                        cancelUrl: "https://localhost:3000/linepay/cancel",
+                        confirmUrl: "http://localhost:8000/linepay/confirm",
+                        cancelUrl: "http://localhost:8000/linepay/cancel",
                       },
                     };
                     // res.redirect("https://www.google.com/")
@@ -1344,7 +1434,7 @@ app.post("/cartPay", function (req, res) {
                     paymentAccessToken =
                       linePayRes.data.info.paymentAccessToken;
                     if (linePayRes?.data?.returnCode === "0000") {
-                      res.send(linePayRes?.data?.info.paymentUrl.web); //有成功返回linepay 付款網址但無法成功轉址
+                      res.send(linePayRes?.data?.info.paymentUrl.web);
                     }
                   }
                 }
@@ -1356,10 +1446,9 @@ app.post("/cartPay", function (req, res) {
     }
   );
 });
-
 app.get("/linepay/confirm", async (req, res) => {
+  const { transactionId, orderId } = req.query;
   console.log(transactionId, orderId);
-  res.send("http://localhost:3000/index");
   try {
     const order = orders[orderId];
     const linePayBody = {
@@ -1370,17 +1459,16 @@ app.get("/linepay/confirm", async (req, res) => {
     const headers = createSignature(uri, linePayBody);
     const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`;
     const linePayRes = await axios.post(url, linePayBody, { headers });
-    console.log("Apple456", linePayRes);
-    res.send("http://localhost:3000/index");
+    console.log("付款成功");
     //這裡寫交易成功轉址
+    res.redirect("http://localhost:3000/index");
   } catch (err) {
     res.end();
   }
 });
 
-//訂單寫入
-
 //修改購物車內容
+
 app.patch("/itemedit/:itemid", function (req, res) {
   console.log("修改");
   console.log(req.params.itemid);
@@ -1440,109 +1528,3 @@ app.delete("/itemdelete/:itemid", function (req, res) {
     }
   );
 });
-
-// //line pay串接
-
-// function createSignature(uri, linePayBody) {
-//   let nonce = parseInt(new Date().getTime() / 1000);
-//   const string = `${SecretKey}/${LINEPAY_VERSION}${uri}${JSON.stringify(
-//     linePayBody
-//   )}${nonce}`;
-//   const signature = Base64.stringify(HmacSHA256(string, SecretKey));
-//   console.log(linePayBody, signature);
-//   const headers = {
-//     "Content-Type": "application/json",
-//     "X-LINE-ChannelId": LINEPAY_CHANNEL_ID,
-//     "X-LINE-Authorization-Nonce": nonce,
-//     "X-LINE-Authorization": signature,
-//   };
-//   console.log("headersssssss" + headers);
-//   return headers;
-// }
-
-// app
-//   .post("/test0231/:orderId", async function (req, res) {
-//     try {
-//       let orderDate;
-//       let orders = {};
-//       let { orderId } = req.params;
-//       const row = await new Promise((resolve, reject) => {
-//         conn.query("SELECT * FROM orders where orders_id=2", [], (err, row) => {
-//           if (err) {
-//             reject(err);
-//           } else {
-//             resolve(row);
-//           }
-//         });
-//       });
-
-//       console.log(row[0]);
-//       orderDate = {
-//         amount: row[0].orders_total,
-//         currency: "TWD",
-//         packages: [
-//           {
-//             id: row[0].orders_id,
-//             amount: Number(row[0].orders_total),
-//             products: [
-//               {
-//                 name: "飲料",
-//                 quantity: 1,
-//                 price: Number(row[0].orders_total),
-//               },
-//             ],
-//           },
-//         ],
-//         orderId: orderId,
-//       };
-//       console.log(orderDate);
-//       const order = orderDate;
-//       orders[order.orderId] = order;
-//       console.log(orders);
-//       console.log(order);
-
-//       const linePayBody = {
-//         ...order,
-//         redirectUrls: {
-//           confirmUrl: "https://localhost:3000/linepay/confirm",
-//           cancelUrl: "https://localhost:3000/linepay/cancel",
-//         },
-//       };
-//       console.log("linePayBody", linePayBody);
-//       const uri = "/payments/request";
-//       const headers = createSignature(uri, linePayBody);
-//       //準備送給linepay
-//       const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`;
-//       const linePayRes = await axios.post(url, linePayBody, { headers });
-//       console.log("linePayRes", linePayRes.data);
-//       console.log(linePayRes.data.info);
-//       if (linePayRes?.data?.returnCode === "0000") {
-//         res.send(linePayRes?.data?.info.paymentUrl.web); //有成功返回linepay 付款網址但無法成功轉址
-//       }
-//       console.log("web", linePayRes?.data?.info.paymentUrl.web); //'https://sandbox-web-pay.line.me/web/payment/wait?transactionReserveId=RUpIVkRJQ0lyR2FBL3hzRUFQVm5XaEFxSHlXWGlHWjVmUTVVdUR2ZHg4YUJuU0NmSGpFMzdWdU1VdW41UlhEbA',
-//       console.log("Apple123", linePayRes.data);
-//     } catch (err) {
-//       console.log(err);
-//       res.end();
-//     }
-//   })
-//   .get("/linepay/confirm", async (req, res) => {
-//     const { transactionId, orderId } = req.query;
-//     console.log(transactionId, orderId);
-//     try {
-//       const order = orders[orderId];
-//       const linePayBody = {
-//         amount: order.amount,
-//         currency: "TWD",
-//       };
-//       const uri = `/payments/${transactionId}/confirm`;
-//       const headers = createSignature(uri, linePayBody);
-//       const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`;
-//       const linePayRes = await axios.post(url, linePayBody, { headers });
-//       console.log("Apple456", linePayRes);
-//       res.end();
-//       //這裡寫交易成功轉址
-//     } catch (err) {
-//       res.end();
-//     }
-//   });
