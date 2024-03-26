@@ -493,7 +493,7 @@ cartMenuClick = () => {
 
 
   forgotPassword_click = async (e) => {
-    e.preventDefault(); // 防止表單提交的默認行為
+    e.preventDefault(); 
     var dataToServer = {
       email: this.state.email
     };
