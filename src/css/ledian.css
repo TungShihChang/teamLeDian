@@ -435,6 +435,10 @@ main div.choose_right div.image img.card-img-top {
   color: #f3b021;
 }
 
+main div.choose_right:hover {
+  cursor: pointer;
+}
+
 main div.choose_right div.information p.score {
   background-color: #f2f2f2;
   padding: 1% 2%;
