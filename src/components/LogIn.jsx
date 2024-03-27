@@ -162,13 +162,13 @@ class Login extends Component {
                 ></button>
               </div>
               <div className="modal-body">
-                <div className="input-group mb-3">
+                <div className="input-group mb-3 fs-5">
                   <div
                     className="input-group-img d-flex align-items-center justify-content-center rounded-start-2"
                   >
                     <img className="imgicon w-50" src="./img/Member_Area/email.png" alt=" " />
                   </div>
-                  <input type="email" className="login form-control" placeholder="電子郵件"  onChange={this.email_change}/>
+                  <input type="email" className="login form-control fs-5" placeholder="電子郵件"  onChange={this.email_change}/>
                 </div>
               </div>
               <div className="modal-footer">
@@ -198,7 +198,7 @@ class Login extends Component {
 
 
             <div className="headerlogin text-center rounded-top-4 pt-3">
-                    <h2>
+                    <h1>
                         <button
                             
                             className={this.state.showLoginForm ? 'login-link active loginbold' : 'login-link'}
@@ -214,57 +214,48 @@ class Login extends Component {
                         >
                             註冊
                         </button>
-                    </h2>
+                    </h1>
                 </div>
 
         {this.state.showLoginForm && (
             <div className="email-login">
                <form onSubmit={this.handleSubmit} className="container" action="/login" method="post">
-                <h5 className="text-center welcomeledian m-3">
+                <h4 className="text-center welcomeledian m-3 my-4">
                   歡迎使用樂點！線上訂餐系統
-                </h5>
+                </h4>
                 <div className="input-group mb-3">
                   <div
                     className="input-group-img d-flex align-items-center justify-content-center rounded-start-2"
                   >
                     <img className="imgicon w-50" src="./img/Member_Area/email.png" alt=" " />
                   </div>
-                  <input type="email" className="login form-control" placeholder="電子郵件" value={this.state.email} onChange={this.email_change}/>
+                  <input type="email" className="login form-control fs-5" placeholder="電子郵件" value={this.state.email} onChange={this.email_change}/>
                 </div>
-                <div className="input-group mb-3">
+                <div className="input-group mb-5">
                   <div
                     className="input-group-img d-flex align-items-center justify-content-center rounded-start-2"
                   >
                     <img className="imgicon w-50" src="./img/Member_Area/password.png" alt=" " />
                   </div>
-                  <input type="password" className="login form-control" placeholder="密碼" value={this.state.password} onChange={this.password_change}/>
+                  <input type="password" className="login form-control fs-5" placeholder="密碼" value={this.state.password} onChange={this.password_change}/>
                 </div>
                 <div className="u-form-group mb-1">
                   <button className="btn btn-login w-100" onClick={this.login_click} type='button'>
-                    <h5 className="fw-bold m-1">登入</h5>
+                    <h5 className="fw-bold m-1 fs-4">登入</h5>
                   </button>
                 </div>
                 <div className="u-form-group mb-3 text-center">
                 <button
                         id='forgotbutton'
-                        className="forgot-password mb-3" 
+                        className="forgot-password mb-3 fs-5" 
                         type='button'
                         data-bs-toggle="modal"
                         data-bs-target="#staticBackdrop"
                     >忘記密碼</button>
                 </div>
-                <div className="login-box mb-3">
-                  <div className="other-login">
-                    <span className="hr-line"></span>
-                    其它登入方式
-                    <span className="hr-line"></span>
-                  </div>
+                <div className="login-box mb-5">
                 </div>
-                <div className="social-login mb-3">
-                  <button className="btn btn-google w-100 py-2">
-                    <img className="imggoogleicon me-2" src="./img/Member_Area/google.png" alt=" " />
-                    Google
-                  </button>
+                <div className="social-login mb-5">
                 </div>
               </form>
               <div className="bottom text-center rounded-bottom-4">
@@ -279,16 +270,16 @@ class Login extends Component {
         {!this.state.showLoginForm && (
             <div className="email-signup">
               <form className="container" action="/signup" method="post">
-                <h5 className="text-center welcomeledian m-3">
+                <h4 className="text-center welcomeledian m-3 my-4">
                   歡迎使用樂點！線上訂餐系統
-                </h5>
+                </h4>
                 <div className="input-group mb-3">
                   <div
                     className="input-group-img d-flex align-items-center justify-content-center rounded-start-2"
                   >
                     <img className="imgicon w-50" src="./img/Member_Area/phone.png" alt=" " />
                   </div>
-                  <input type="phone" className="login form-control" placeholder="電話" value={this.state.phone} onChange={this.phone_change}/>
+                  <input type="phone" className="login form-control fs-5" placeholder="電話" value={this.state.phone} onChange={this.phone_change}/>
                 </div>
                 <div className="input-group mb-3">
                   <div
@@ -296,7 +287,7 @@ class Login extends Component {
                   >
                     <img className="imgicon w-50" src="./img/Member_Area/email.png" alt=" " />
                   </div>
-                  <input type="email" className="login form-control" placeholder="電子郵件" value={this.state.email} onChange={this.email_change}/>
+                  <input type="email" className="login form-control fs-5" placeholder="電子郵件" value={this.state.email} onChange={this.email_change}/>
                 </div>
                 <div className="input-group mb-3">
                   <div
@@ -304,9 +295,9 @@ class Login extends Component {
                   >
                     <img className="imgicon w-50" src="./img/Member_Area/password.png" alt=" " />
                   </div>
-                  <input type="password" className="login form-control" placeholder="密碼" value={this.state.password} onChange={this.password_change}/>
+                  <input type="password" className="login form-control fs-5" placeholder="密碼" value={this.state.password} onChange={this.password_change}/>
                 </div>
-                <div className="input-group mb-3">
+                <div className="input-group mb-5">
                   <div
                     className="input-group-img d-flex align-items-center justify-content-center rounded-start-2"
                   >
@@ -314,29 +305,20 @@ class Login extends Component {
                   </div>
                   <input
                     type="password"
-                    className="login form-control"
+                    className="login form-control fs-5"
                     placeholder="再次輸入密碼"
                     value={this.state.password2}
                     onChange={this.password2_change}
                   />
                 </div>
-                <div className="u-form-group mb-3">
+                <div className="u-form-group mb-5">
                   <button type='button' className="btn btn-login w-100" onClick={this.signup_click}>
-                    <h5 className="fw-bold m-1">註冊</h5>
+                    <h5 className="fw-bold m-1 fs-4">註冊</h5>
                   </button>
                 </div>
                 <div className="login-box mb-3">
-                  <div className="other-login">
-                    <span className="hr-line"></span>
-                    其它登入方式
-                    <span className="hr-line"></span>
-                  </div>
                 </div>
                 <div className="social-login mb-3">
-                  <button className="btn btn-google w-100 py-2">
-                    <img className="imggoogleicon me-2" src="./img/Member_Area/google.png" alt=" " />
-                    Google
-                  </button>
                 </div>
               </form>
               <div className="bottom text-center rounded-bottom-4">
@@ -514,7 +496,7 @@ cartMenuClick = () => {
     }
     }
 }
-
+// eslint-disable-next-line
 }
 
 

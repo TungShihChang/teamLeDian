@@ -1,8 +1,10 @@
 import React, { Component } from "react";
+import "../css/profile.css";
 import JsBarcode from "jsbarcode";
 import "../css/profile.css"; // 引入樣式文件
 import "react-datepicker/dist/react-datepicker.css"; // 引入日期選擇器樣式
 import { Modal } from "react-bootstrap"; // 添加這行
+import { FaRegTrashAlt, FaPencilAlt } from "react-icons/fa";
 import Axios from "axios";
 class Barcode extends Component {
   constructor(props) {
@@ -80,7 +82,7 @@ class Barcode extends Component {
 
 // 處理編輯按鈕點擊
   handleEditButtonClick = () => {
-    this.setState({ isModalOpen: true });
+    this.setState({ isModalOpen: true ,validationResult: ""})
   };
 // 儲存條碼
 handleSaveButtonClick = () => {
@@ -177,6 +179,7 @@ handleDeleteButtonClick = () => {
     if (regex.test(barcodeValue)) {
       // 驗證通過後直接呼叫儲存函式處理後續操作
       this.handleSaveButtonClick(barcodeValue);
+      this.setState({validationResult: ""})
     } else {
       this.setState({ validationResult: "載具號碼格式不正確，請重新確認!" });
     }
@@ -212,18 +215,18 @@ handleDeleteButtonClick = () => {
       <>
         <Modal show={this.state.isModalOpen} backdrop="static" centered>
           <Modal.Header closeButton onClick={this.handleModalClose}>
-            <Modal.Title>我的載具</Modal.Title>
+            <Modal.Title className="fs-3">我的載具</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <label
               htmlFor="verifyBarcodeInput"
-              className="form-label modalLabel"
+              className="form-label modalLabel fs-5"
             >
               請輸入載具條碼，輸入確認後會自動產生條碼
             </label>
             <input
               id="verifyBarcodeInput"
-              className="form-control mb-2"
+              className="form-control mb-2 fs-5"
               type="text"
               placeholder="首位為/，英文字母為大寫"
               maxLength="8"
@@ -231,13 +234,13 @@ handleDeleteButtonClick = () => {
               value={this.state.verifyBarcodeInput}
               onChange={this.handleInputChange}
             />
-            <div id="validationResult">{this.state.validationResult}</div>
+            <div id="validationResult" className="fs-5">{this.state.validationResult}</div>
           </Modal.Body>
           <Modal.Footer
             onClick={this.validateBarcode}
             style={{ cursor: "pointer" }}
           >
-            <div className="mx-auto">儲存</div>
+            <div className="mx-auto fs-4">儲存</div>
           </Modal.Footer>
         </Modal>
 
@@ -252,7 +255,7 @@ handleDeleteButtonClick = () => {
       </div>
       <div className="col-6">
         <div
-          className={`d-flex align-items-center ml-auto text-grey ${
+          className={`d-flex align-items-center ms-3 text-grey ${
             this.state.barcodeImgButtonDisplay === "none" ? "d-none" : ""
           }`}
           id="barcodeimgbutton"
@@ -263,11 +266,8 @@ handleDeleteButtonClick = () => {
             id="editbutton"
             onClick={this.handleEditButtonClick}
           >
-            <img
-              src="./img/Member_Area/pencil.png"
-              alt="edit"
-              className="img-fluid"
-            />
+            <FaPencilAlt className="pencil" />
+            
           </button>
           <button
             type="button"
@@ -275,11 +275,7 @@ handleDeleteButtonClick = () => {
             id="deletebutton"
             onClick={this.handleDeleteButtonClick}
           >
-            <img
-              src="./img/Member_Area/garbage.png"
-              alt="delete"
-              className="img-fluid"
-            />
+            <FaRegTrashAlt className="trash" />
           </button>
         </div>
       </div>
@@ -301,7 +297,7 @@ handleDeleteButtonClick = () => {
               id="Barcodeborder"
               onClick={this.handleEditButtonClick}
             >
-              <span className="Barcodemodallabel">&#43; 新增載具條碼</span>
+              <span className="Barcodemodallabel fs-5">&#43; 新增載具條碼</span>
               <button
                 type="button"
                 className="btn btn-primary Barcodemodal"

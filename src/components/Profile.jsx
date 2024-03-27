@@ -135,8 +135,6 @@ class Profile extends Component {
   toggleToast = (message) => {
     this.setState({ toastMessage: message });
     this.setState((prevState) => ({ showToast: !prevState.showToast }));
-  
-    // 如果 showToast 為 true，啟動計時器；如果 showToast 為 false，清除計時器
     if (!this.state.showToast) {
       this.toastTimer = setTimeout(() => {
         this.setState({ showToast: false });
@@ -162,6 +160,13 @@ class Profile extends Component {
   handleForm1Submit = (event) => {
     event.preventDefault();
     const { selectedFile, userData } = this.state;
+    const form = event.currentTarget;
+  
+    if (!form.checkValidity()) {
+      event.stopPropagation();
+      this.setState({ form1Validated: true });
+      return;
+    }
     Axios.post(
       `http://localhost:8000/updateUserData/${userData.user_id}`,
       userData
@@ -508,20 +513,20 @@ class Profile extends Component {
                         LeDian
                       </h1>
                     </div>
-                    <div className="col-12">
-                      <span>{h5Name}</span>
-                      <span>，感謝您的訂單</span>
-                    </div>
+                    <div className = "fs-5">
                     {this.state.selectedOrder && (
                       <div className="col-12 mb-3">
                         <span>以下是您在</span>
+                        <div className="col-12 mb-3">
                         <span className="ma-1">
                           {this.state.selectedOrder.brand_name}
                         </span>
                         <span>{this.state.selectedOrder.branch_name}</span>
                         <span>訂購的電子明細。</span>
                       </div>
+                      </div>
                     )}
+                    </div>
                   </div>
                   <div className="col-3 text-end ps-0">
                     <div className="col-12">
@@ -546,16 +551,16 @@ class Profile extends Component {
 
               <div className="modal-body">
                 <div className="row container mx-0">
-                  <div className="col-12">
-                    <h4 className="fw-bold">訂單</h4>
+                  <div className="col-12 mb-2">
+                    <h3 className="fw-bold">訂單</h3>
                   </div>
                   <hr />
                   {this.state.selectedOrder && (
                     <>
-                      <div className="col-5 mt-1">訂單狀態</div>
-                      <div className="col-3 px-1">
+                      <div className="col-5 mt-1 fs-5">訂單狀態</div>
+                      <div className="col-4 px-1">
                         <div
-                          className={`sendOrder rounded-1 text-center p-1 ${
+                          className={`sendOrder rounded-1 text-center p-1 fs-5 ${
                             this.state.selectedOrder.orders_status === 0
                               ? ""
                               : "completedOrder"
@@ -566,29 +571,29 @@ class Profile extends Component {
                             : "訂單完成"}
                         </div>
                       </div>
-                      <div className="col-4"></div>
+                      <div className="col-3"></div>
                       <hr className="mt-3" />
 
-                      <div className="col-5">預計取貨時間</div>
-                      <div className="col-7">
+                      <div className="col-5 fs-5">預計取貨時間</div>
+                      <div className="col-7 fs-5">
                         {this.state.selectedOrder.orders_pick_up}
                       </div>
                       <hr className="mt-3" />
 
-                      <div className="col-5">付款方式</div>
-                      <div className="col-7">
+                      <div className="col-5 fs-5">付款方式</div>
+                      <div className="col-7 fs-5">
                         {this.state.selectedOrder.terms_of_payment}
                       </div>
                       <hr className="mt-3" />
 
-                      <div className="col-5">開立發票方式</div>
-                      <div className="col-7">
+                      <div className="col-5 fs-5">開立發票方式</div>
+                      <div className="col-7 fs-5">
                         <span>{this.state.selectedOrder.invoicing_method}</span>
                       </div>
                       <hr className="mt-3" />
 
-                      <div className="col-5">訂單建立時間</div>
-                      <div className="col-7 mb-3">
+                      <div className="col-5 fs-5">訂單建立時間</div>
+                      <div className="col-7 mb-3 fs-5">
                         {this.state.selectedOrder.createtime}
                       </div>
 
@@ -597,11 +602,11 @@ class Profile extends Component {
                           className="my-2 text-center rounded-2"
                           id="pointbuttom"
                         >
-                          <div className="col-12 mt-3 mb-1 fs-5">
+                          <div className="col-12 mt-3 mb-1 fs-4">
                             恭喜獲得點數
                           </div>
-                          <div className="col-12 mb-4 fs-6">
-                            <span className="mx-2">消費贈點</span>
+                          <div className="col-12 mb-4 fs-5">
+                            <span className="mx-1">消費贈點</span>
                             <span>
                               {Math.floor(
                                 this.state.selectedOrder.orders_total / 20
@@ -615,18 +620,18 @@ class Profile extends Component {
                   )}
                   {/* <!-- 訂單end --> */}
 
-                  <div className="col-12 mt-4">
-                    <h4 className="fw-bold">明細</h4>
+                  <div className="col-12 mt-4 mb-2">
+                    <h3 className="fw-bold">明細</h3>
                   </div>
                   <hr />
                   {this.state.selectedOrderDetails && (
                     <>
                       {this.state.selectedOrderDetails.map((detail, index) => (
                         <div key={`detail_${index}`} className="rounded-1 detailsbuttom my-2">
-                          <div className="col-12 mb-1 fs-6 fw-bold mt-3">
+                          <div className="col-12 mb-1 fs-5 fw-bold mt-3">
                             {detail.details_name}
                           </div>
-                          <div className="col-12">
+                          <div className="col-12 fs-5">
                             <p>
                               <span>{detail.details_size}/</span>
                               <span>{detail.details_mperatures}/</span>
@@ -641,8 +646,8 @@ class Profile extends Component {
                   )}
 
                     {this.state.selectedOrder && this.state.selectedOrder.orders_bag === 1 && (
-                       <div key="bag" className="rounded-1 detailsbuttom">
-                        <div className="col-12 mb-1 fs-6 fw-bold mt-3">塑膠袋</div>
+                       <div key="bag" className="rounded-1 detailsbuttom fs-5">
+                        <div className="col-12 mb-1 fw-bold mt-3">塑膠袋</div>
                         <div className="col-12 mb-3">
                           <span>$2/</span>
                           <span>{this.state.selectedOrder.orders_bag_num}份</span>
@@ -656,14 +661,12 @@ class Profile extends Component {
                         {this.state.selectedOrderDetails.map((detail, index) => {
                           totalQuantity += detail.details_quantity; 
                         })}
-
-
                         <div className="mt-4"></div>
-                        <div className="col-3">
+                        <div className="col-3 fs-5">
                           <span>商品</span>
                         </div>
-                        <div className="col-4 text-start">X{totalQuantity}</div>
-                        <div className="col-5 text-end">${this.state.selectedOrderDetails.reduce((totalPrice, detail) => totalPrice + detail.details_total, 0)}</div>
+                        <div className="col-4 text-start fs-5">X{totalQuantity}</div>
+                        <div className="col-5 text-end fs-5">${this.state.selectedOrderDetails.reduce((totalPrice, detail) => totalPrice + detail.details_total, 0)}</div>
                       </>
                     )}
 
@@ -672,34 +675,34 @@ class Profile extends Component {
                     <>
                      {this.state.selectedOrder && this.state.selectedOrder.orders_bag === 1 && (
                       <>
-                      <div className="col-3">
+                      <div className="col-3 fs-5">
                         <span>塑膠袋</span>
                       </div>
-                      <div className="col-4 text-start">X{this.state.selectedOrder.orders_bag_num}</div>
-                      <div className="col-5 text-end">${this.state.selectedOrder.orders_bag_num * 2}</div>
+                      <div className="col-4 text-start fs-5">X{this.state.selectedOrder.orders_bag_num}</div>
+                      <div className="col-5 text-end fs-5">${this.state.selectedOrder.orders_bag_num * 2}</div>
                       </>
                      )}
                       {this.state.selectedOrder.usePoninter !== 0 && (
                         <>
-                          <div className="col-3 text-danger">
+                          <div className="col-3 text-danger fs-5">
                             <span>點數折扣</span>
                           </div>
-                          <div className="col-9 text-end text-danger">-${this.state.selectedOrder.usePoninter}</div>
+                          <div className="col-9 text-end text-danger fs-5">-${this.state.selectedOrder.usePoninter}</div>
                         </>
                       )}
 
                       <hr className="mt-3" />
 
-                      <div className="col-3">
+                      <div className="col-3 fs-5">
                         <span>總計</span>
                       </div>
-                      <div className="col-9 text-end mb-4">${this.state.selectedOrder.orders_total}</div>
+                      <div className="col-9 text-end mb-4 fs-5">${this.state.selectedOrder.orders_total}</div>
                       </>
                      )}
                   
 
-                  <div className="col-12 mt-4">
-                    <h4 className="fw-bold">評價此次訂單</h4>
+                  <div className="col-12 mt-4 fs-5 mb-2">
+                    <h3 className="fw-bold">評價此次訂單</h3>
                   </div>
                   <hr />
                   <div className="col-12 text-center mb-3">
@@ -734,7 +737,7 @@ class Profile extends Component {
               
                 <button
                     type="button"
-                    className="btnmodal"
+                    className="btnmodal fs-4"
                     data-bs-dismiss="modal"
                     aria-label="Close"
                     onClick={this.handleModalClose}
@@ -755,11 +758,7 @@ class Profile extends Component {
                   <div className="col-5 mt-4 pt-0 userimg-container">
                     <img
                       id="userimg"
-                      src={
-                        userData.user_img
-                          ? `/img/users/${userData.user_img}`
-                          : "/img/users/Ledian.png"
-                      }
+                      src={`/img/users/${this.state.userImg}`}
                       alt="memberHeadshot"
                       className="w-100 img-fluid mt-1 mx-1 rounded-circle border"
                     ></img>
@@ -767,7 +766,7 @@ class Profile extends Component {
                   <div className="col-7 mt-3">
                     <div className="row">
                       <div className="col-12 mb-5 mt-3 mx-1">
-                        <h5 className="username">{h5Name}</h5>
+                        <h5 className="username fs-5">{h5Name}</h5>
 
                         <span className="d-flex align-items-center">
                           <img
@@ -775,7 +774,7 @@ class Profile extends Component {
                             id="pointimg"
                             alt=" "
                           />
-                          <h6 className="mb-0 mx-2 userpoint">
+                          <h6 className="mb-0 mx-2 userpoint fs-5">
                           {this.state.userData.points}
                           </h6>
                         </span>
@@ -783,7 +782,7 @@ class Profile extends Component {
                     </div>
                   </div>
                 </div>
-                <ul id="leftnav" className="nav flex-column fs-5">
+                <ul id="leftnav" className="nav flex-column fs-4">
                   <li className="nav-item">
                     <a
                       className="nav-link active"
@@ -838,21 +837,21 @@ class Profile extends Component {
                     style={{ display: displayCol6 }}
                   >
                     <img
-                      src="./img/Member_Area/LeDian_LOGO-05.jpg"
+                      src={`/img/users/${this.state.userImg}`}
                       id="userimgcol10"
                       className="border rounded-circle img-fluid"
                       alt=" "
                     />
                   </div>
                   <div className="col-6 mt-1" style={{ display: displayCol6 }}>
-                    <h5 className="fs-5 mb-1">{userData.name}</h5>
+                    <h5 className="fs-3 mb-1">{userData.name}</h5>
                     <span className="d-flex align-items-center ">
                       <img
                         src="./img/Member_Area/points.png"
                         id="pointimgcol10"
                         alt=" "
                       />
-                      <h6 className="mb-0 mx-2 fs-6 mt-0">{userData.points}</h6>
+                      <h6 className="mb-0 mx-2 fs-4 mt-0">{userData.points}</h6>
                     </span>
                   </div>
                 </div>
@@ -948,12 +947,12 @@ class Profile extends Component {
                                   className="img-fluid mb-1"
                                   alt="Upload Icon"
                                 />
-                                <p id="uploadtext">上傳頭像</p>
+                                <p className="fs-5" id="uploadtext">上傳頭像</p>
                               </div>
                             </label>
                           </div>
                           <div className="col-12 mb-3">
-                            <label htmlFor="userName" className="form-label">
+                            <label htmlFor="userName" className="form-label fs-5">
                               姓名
                             </label>
                             <input
@@ -961,14 +960,14 @@ class Profile extends Component {
                               id="userNameId"
                               defaultValue={userData.name}
                               name="name"
-                              className="form-control"
+                              className="form-control fs-5"
                               onChange={this.handleInputChange}
                               maxLength={5}
                             />
                           </div>
 
                           <div className="col-12 mb-3">
-                            <label for="email" className="form-label">
+                            <label for="email" className="form-label fs-5">
                               <span className="text-danger">*</span>信箱
                             </label>
                             <input
@@ -976,20 +975,20 @@ class Profile extends Component {
                               id="userEmailId"
                               defaultValue={this.state.userData.email}
                               name="email"
-                              className="form-control"
+                              className="form-control fs-5"
                               required
                               onChange={this.handleInputChange}
                             />
                             <div className="invalid-feedback">不能為空</div>
                           </div>
                           <div className="col-12 mb-3">
-                            <label for="userPhoneId" className="form-label">
+                            <label for="userPhoneId" className="form-label fs-5">
                               <span className="text-danger">*</span>手機號碼
                             </label>
                             <input
                               type="text"
                               id="userPhoneId"
-                              className="form-control"
+                              className="form-control fs-5"
                               defaultValue={this.state.userData.phone}
                               name="phone"
                               required
@@ -1001,7 +1000,7 @@ class Profile extends Component {
                           <div className="col-12">
                             <label
                               for="inlineRadio1"
-                              className="form-label mb-0"
+                              className="form-label mb-0 fs-5"
                             >
                               性別
                             </label>
@@ -1009,7 +1008,7 @@ class Profile extends Component {
                           <div className="col-12 mb-2 mt-2 mx-1">
                             <div className="form-check form-check-inline">
                               <input
-                                className="form-check-input"
+                                className="form-check-input fs-5"
                                 type="radio"
                                 name="inlineRadioOptions"
                                 id="inlineRadio1"
@@ -1018,7 +1017,7 @@ class Profile extends Component {
                                 checked={this.state.selectedGender === 0}
                               />
                               <label
-                                className="form-check-label"
+                                className="form-check-label fs-5"
                                 for="inlineRadio1"
                               >
                                 女
@@ -1035,7 +1034,7 @@ class Profile extends Component {
                                 checked={this.state.selectedGender === 1}
                               />
                               <label
-                                className="form-check-label"
+                                className="form-check-label fs-5"
                                 for="inlineRadio2"
                               >
                                 男
@@ -1052,7 +1051,7 @@ class Profile extends Component {
                                 checked={this.state.selectedGender === 2}
                               />
                               <label
-                                className="form-check-label"
+                                className="form-check-label fs-5"
                                 for="inlineRadio3"
                               >
                                 不提供
@@ -1063,7 +1062,7 @@ class Profile extends Component {
                           <div className="col-12">
                             <label
                               for="inlineRadio1"
-                              className="form-label mb-0 mt-3"
+                              className="form-label mb-0 mt-3 fs-5"
                             >
                               生日
                             </label>
@@ -1071,7 +1070,7 @@ class Profile extends Component {
 
                           <div className="datepicker-container profiledate">
                             <DatePicker
-                              className="text-des form-control"
+                              className="text-des form-control fs-5"
                               selected={this.state.selectedDate}
                               maxDate={new Date()}
                               dateFormat="yyyy-MM-dd"
@@ -1081,14 +1080,14 @@ class Profile extends Component {
                           <div className="col-12">
                             <label
                               htmlFor="useraddress"
-                              className="form-label mb-0 mt-3"
+                              className="form-label mb-0 mt-3 fs-5"
                             >
                               居住地
                             </label>
                           </div>
                           <div className="col-6 mt-2">
                             <select
-                              className="form-select"
+                              className="form-select fs-5"
                               aria-label="Default select example"
                               value={this.state.userData.city_id || ""}
                               onChange={this.handleCityChange} 
@@ -1107,7 +1106,7 @@ class Profile extends Component {
                           </div>
                           <div className="col-6 mt-2">
                             <select
-                              className="form-select"
+                              className="form-select fs-5"
                               aria-label="Default select example"
                               value={this.state.userData.area_id || ""}
                               onChange={this.handleRegionChange} 
@@ -1128,7 +1127,7 @@ class Profile extends Component {
                           <div className="col-12 mt-5">
                             <button
                               id="profileButton"
-                              className="btn btn-profileButton px-5"
+                              className="btn btn-profileButton px-5 fs-4"
                               type="submit"
                             >
                               確認
@@ -1149,14 +1148,14 @@ class Profile extends Component {
                           noValidate
                         >
                           <div className="col-12 mb-4">
-                            <label for="inputPassword" className="form-label">
+                            <label for="inputPassword" className="form-label fs-5">
                               <span className="text-danger">*</span>舊密碼
                             </label>
                             <input
                               type="password"
                               id="inputOldPassword"
                               name="oldPassword"
-                              className="form-control"
+                              className="form-control fs-5"
                               required
                               autoComplete="current-password"
                             />
@@ -1166,7 +1165,7 @@ class Profile extends Component {
                           <div className="col-12 mb-4">
                             <label
                               for="inputNewPassword"
-                              className="form-label"
+                              className="form-label fs-5"
                             >
                               <span className="text-danger">*</span>新密碼
                             </label>
@@ -1174,7 +1173,7 @@ class Profile extends Component {
                               type="password"
                               id="inputNewPassword"
                               name="newPassword"
-                              className="form-control"
+                              className="form-control fs-5"
                               required
                               autoComplete="new-password"
                             />
@@ -1184,7 +1183,7 @@ class Profile extends Component {
                           <div className="col-12 mb-4">
                             <label
                               for="inputNewPassword2"
-                              className="form-label"
+                              className="form-label fs-5"
                             >
                               <span className="text-danger">*</span>
                               再次輸入新密碼
@@ -1193,7 +1192,7 @@ class Profile extends Component {
                               type="password"
                               id="inputNewPassword2"
                               name="newPassword"
-                              className="form-control"
+                              className="form-control fs-5"
                               required
                               autoComplete="new-password"
                             />
@@ -1217,7 +1216,7 @@ class Profile extends Component {
                         {ordersData.map((order, index) => (
                           <div key={order.orderId} className="col">
                             <div className="card h-100 text-center">
-                              <div className="card-header fw-bold">完成</div>
+                              <div className="card-header fw-bold fs-5">完成</div>
                               <div className="text-center mt-3">
                                 <img
                                   src={`/img/logo/${order.brand_id}.png`}
@@ -1225,7 +1224,7 @@ class Profile extends Component {
                                   alt="品牌LOGO"
                                 />
                               </div>
-                              <div className="card-body">
+                              <div className="card-body fs-5">
                                 <p className="card-title">
                                   {order.orders_pick_up}
                                 </p>
@@ -1237,12 +1236,12 @@ class Profile extends Component {
                                 </p>
                               </div>
                               <div className="card-footer">
-                                <h4 className="mt-2 fw-bold">
+                                <h4 className="mt-2 fw-bold fs-3">
                                   共 {order.orders_total} 元
                                 </h4>
                               </div>
                               <button
-                                className="btn btn-footer mx-3 mb-3"
+                                className="btn btn-footer mx-3 mb-3 fs-5"
                                 data-bs-toggle="modal"
                                 data-bs-target="#Orders_staticBackdrop"
                                 onClick={() =>
@@ -1258,7 +1257,7 @@ class Profile extends Component {
                     </div>
 
                     {/* 載具條碼 */}
-                    <div className="tab-pane fade" id="Barcode-v">
+                    <div className="tab-pane fade fs-4" id="Barcode-v">
                       <div className="row mt-3">
                         <div className="col-12 text-center">歡迎使用樂點！</div>
                         <div className="col-12 text-center mb-4">

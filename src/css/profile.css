@@ -231,9 +231,10 @@
   border: #f3b021 1px solid;
 }
 #LeDianLogoModal {
-  width: 80%;
+  width: 70%;
   margin: 0 auto;
 }
+
 #pointbuttom {
   background-color: #f3b021;
   color: #fff;
@@ -272,6 +273,7 @@ textarea {
 .sendOrder {
   background-color: #003c96;
   color: #fff;
+  
 }
 #Barcodecontent{
   width: 50%;
@@ -292,4 +294,13 @@ textarea {
 
 .completedOrder {
   background-color: #f3b021;
+}
+
+#editbutton>img{
+  width: 25px;
+  height: 25px;
+}
+#deletebutton>img{
+  width: 25px;
+  height: 25px;
 }
