@@ -910,11 +910,12 @@ app.get("/order_details/:orderId", (req, res) => {
 //   });
 // });
 
-//購物車
+//購物車清單
 app.get("/cartlist/:id", function (req, res) {
+  console.log(req.params.id);
   conn.query(
-    "SELECT  *,  SUM(cartdetails.item_quantity) as total_item ,  SUM(cartdetails.total_price*cartdetails.item_quantity) as total_item_price FROM branch LEFT join  cartdetails ON branch.branch_id=cartdetails.branch_id LEFT join brand on cartdetails.brand_id=brand.brand_id  WHERE user_id=1   GROUP BY cart_id  ",
-    [],
+    "SELECT  *,  SUM(cartdetails.item_quantity) as total_item ,  SUM(cartdetails.total_price*cartdetails.item_quantity) as total_item_price ,cartdetails.createtime as cart_createtime FROM branch LEFT join  cartdetails ON branch.branch_id=cartdetails.branch_id LEFT join brand on cartdetails.brand_id=brand.brand_id  WHERE user_id=?   GROUP BY cart_id",
+    [req.params.id],
     (err, rows) => {
       if (err) {
         console.log(err);
@@ -956,7 +957,7 @@ app.get("/itemedit/:id", function (req, res) {
               products_price: rows[0].products_price_1,
             },
             {
-              size: rows[0].choose_size_2 ? rows[0].size_1_name : "",
+              size: rows[0].choose_size_2 ? rows[0].size_2_name : "",
               temperatures: rows[0].choose_size_2,
               products_price: rows[0].products_price_2,
             },
@@ -1108,90 +1109,7 @@ app.get("/branchinfo/:branchid", function (req, res) {
 });
 
 //訂單寫入
-// app.post("/cartPay", function (req, res) {
-//   console.log("ok");
-//   console.log(req.body);
-
-//   const orderInfo = {
-//     user_id: req.body.user_id,
-//     branch_id: req.body.branch_id,
-//     orders_total: req.body.orders_total,
-//     orders_bag: req.body.orders_bag,
-//     terms_of_payment: req.body.terms_of_payment,
-//     invoicing_method: req.body.invoicing_method,
-//     orders_bag_num: req.body.orders_bag_num,
-//     usePoninter: req.body.usePoninter,
-//     orders_status: req.body.orders_status,
-//     payment_status: req.body.payment_status,
-//     orders_pick_up: req.body.orders_pick_up,
-//     updatetime: req.body.updatetime,
-//     createtime: req.body.createtime,
-//   };
-
-//   const orderDetails = req.body.details;
-//   let neworderDetails;
-
-//   conn.query(
-//     "INSERT INTO orders (user_id, branch_name,brand_name, orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter,orders_status, payment_status, orders_pick_up,updatetime, createtime) VALUES (?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?,?,?,?)",
-//     [
-//       orderInfo.user_id,
-//       orderInfo.branch_name,
-//       orderInfo.brand_name,
-//       orderInfo.orders_total,
-//       orderInfo.orders_bag,
-//       orderInfo.terms_of_payment,
-//       orderInfo.invoicing_method,
-//       orderInfo.orders_bag_num,
-//       orderInfo.usePoninter,
-//       orderInfo.orders_status,
-//       orderInfo.payment_status,
-//       orderInfo.orders_pick_up,
-//       onTime(),
-//       onTime(),
-//     ],
-//     (err, results) => {
-//       if (err) {
-//         res.send(JSON.stringify(err));
-//       } else {
-//         console.log("Inserted successfully.");
-//         console.log("Results:", results);
-
-//         const orders_id = results.insertId;
-//         neworderDetails = orderDetails.map((item) => {
-//           item.orders_id = orders_id;
-//           return [
-//             item.orders_id,
-//             item.details_name,
-//             item.details_size,
-//             item.details_sugar,
-//             item.details_mperatures,
-//             item.details_ingredient,
-//             item.details_amount,
-//             item.details_quantity,
-//             item.details_total,
-//             onTime(),
-//             onTime(),
-//           ];
-//         });
-//         console.log(neworderDetails);
-//         conn.query(
-//           "INSERT INTO order_details (orders_id, details_name, details_size, details_sugar, details_mperatures, details_ingredient,details_amount, details_quantity, details_total, updatetime, createtime) VALUES  ?",
-//           [neworderDetails],
-//           (err, result) => {
-//             if (err) {
-//               console.log(JSON.stringify(err));
-//             } else {
-//               console.log("成功寫入訂單資訊、明細");
-//               console.log(result);
-//               // conn.query("SELECT * FROM orders WHERE orders_id=4",)
-//             }
-//           }
-//         );
-//       }
-//     }
-//   );
-// });
-
+//現金交易
 app.post("/cartcashpay", function (req, res) {
   console.log("ok");
   console.log(req.body);
@@ -1219,7 +1137,7 @@ app.post("/cartcashpay", function (req, res) {
   let orders_id;
   console.log(orderInfo);
   conn.query(
-    "INSERT INTO orders (user_id, brand_id,branch_name,brand_name ,orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter,orders_status, payment_status,updatedpoints,orders_pick_up,updatetime, createtime) VALUES (?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)",
+    "INSERT INTO orders (user_id, brand_id,branch_name,brand_name ,orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter, payment_status,orders_status,updatedpoints,orders_pick_up,updatetime, createtime) VALUES (?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)",
     [
       orderInfo.user_id,
       orderInfo.brand_id,
@@ -1272,6 +1190,7 @@ app.post("/cartcashpay", function (req, res) {
               console.log(JSON.stringify(err));
             } else {
               console.log("成功寫入訂單資訊、明細");
+              res.end();
             }
           }
         );
@@ -1302,7 +1221,6 @@ function createSignature(uri, linePayBody) {
   console.log("headersssssss" + headers);
   return headers;
 }
-
 let orderId = parseInt(new Date().getTime() / 1000);
 app.post("/cartlinepay", function (req, res) {
   console.log("ok");
@@ -1419,7 +1337,6 @@ app.post("/cartlinepay", function (req, res) {
                         cancelUrl: "http://localhost:8000/linepay/cancel",
                       },
                     };
-                    // res.redirect("https://www.google.com/")
                     console.log("linePayBody", linePayBody);
                     const uri = "/payments/request";
                     const headers = createSignature(uri, linePayBody);
@@ -1461,7 +1378,7 @@ app.get("/linepay/confirm", async (req, res) => {
     const linePayRes = await axios.post(url, linePayBody, { headers });
     console.log("付款成功");
     //這裡寫交易成功轉址
-    res.redirect("http://localhost:3000/index");
+    res.redirect("http://localhost:3000/Profile");
   } catch (err) {
     res.end();
   }
@@ -1490,7 +1407,8 @@ app.patch("/itemedit/:itemid", function (req, res) {
         console.log(err);
       }
       console.log(row);
-      console.log("成功");
+      console.log("修改成功");
+      res.end();
     }
   );
 });
@@ -1524,6 +1442,7 @@ app.delete("/itemdelete/:itemid", function (req, res) {
         console.log(err);
       } else {
         console.log("已成功刪除");
+        res.end();
       }
     }
   );

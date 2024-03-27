@@ -157,7 +157,7 @@ class cartList extends Component {
                       href={`/cartPay/${cart.cart_id}`}
                     >
                       <div className="row text-end">
-                        <p className="col text-des-small">02/23 20:30</p>
+                        <p className="col text-des-small">{cart.createtime}</p>
                       </div>
                       <div className="row d-flex d-flex align-items-stretch">
                         <div className="col-auto col-3-mb mb-3 mb-md-0 mx-auto">
@@ -355,9 +355,13 @@ class cartList extends Component {
   };
 
   componentDidMount = async () => {
+    //   let userdata = localStorage.getItem("userdata");
+    // userdata = JSON.parse(userdata);
+    // let user_id = userdata.user_id;
+    // console.log(user_id);
     let newState = { ...this.state };
     let result;
-    result = await axios.get("http://localhost:8000/cartlist/1");
+    result = await axios.get(`http://localhost:8000/cartlist/${2}`);
 
     newState.dbData = result.data;
     this.setState(newState);
