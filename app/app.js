@@ -625,7 +625,6 @@ app.post("/forgotPassword", async function (req, res) {
 });
 
 
-<<<<<<< HEAD
 app.get("/userinfo/:userId", function (req, res) {
   conn.query(
     "SELECT * FROM 'users' WHERE user_id = ?;",
@@ -636,8 +635,6 @@ app.get("/userinfo/:userId", function (req, res) {
   );
 });
 
-=======
->>>>>>> a9986049689141e36934e96cede0567c30bcdb1a
 // user 是大家共用的路由
 app.get("/user/:id", function (req, res) {
     const userId = parseInt(req.params.id);

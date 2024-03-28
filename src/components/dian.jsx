@@ -1281,10 +1281,6 @@ class dian extends Component {
     this.setState({});
     window.location = "/index";
   };
-<<<<<<< HEAD
-=======
-
->>>>>>> a9986049689141e36934e96cede0567c30bcdb1a
   cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
     if (userData) {
