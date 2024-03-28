@@ -355,13 +355,12 @@ class cartList extends Component {
   };
 
   componentDidMount = async () => {
-    //   let userdata = localStorage.getItem("userdata");
-    // userdata = JSON.parse(userdata);
-    // let user_id = userdata.user_id;
-    // console.log(user_id);
+    let userdata = localStorage.getItem("userdata");
+    userdata = JSON.parse(userdata);
+    let user_id = userdata.user_id;
     let newState = { ...this.state };
     let result;
-    result = await axios.get(`http://localhost:8000/cartlist/${2}`);
+    result = await axios.get(`http://localhost:8000/cartlist/${user_id}`);
 
     newState.dbData = result.data;
     this.setState(newState);

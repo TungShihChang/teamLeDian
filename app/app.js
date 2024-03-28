@@ -873,43 +873,6 @@ app.get("/order_details/:orderId", (req, res) => {
   );
 });
 
-// app.get('/branch/:branchId', (req, res) => {
-//   const branchId = req.params.branchId;
-//   conn.query('SELECT * FROM branch WHERE branch_id = ?', [branchId], (error, results) => {
-//     if (error) {
-//       console.error('Error querying database:', error);
-//       res.status(500).send('Internal server error');
-//       return;
-//     }
-//     if (results.length === 0) {
-//       res.status(404).send('Branch not found');
-//     } else {
-//       console.log('branch data:', results);
-//       console.log('branch data:', results);
-//       console.log('branch data:', results);
-//       console.log('branch data:', results);
-//       console.log('branch data:', results);
-//       res.json(results);
-//     }
-//   });
-// });
-
-// app.get('/brand/:brandId', (req, res) => {
-//   const brandId = req.params.brandId;
-//   conn.query('SELECT * FROM brand WHERE brand_id = ?', [brandId], (error, results) => {
-//     if (error) {
-//       console.error('Error querying database:', error);
-//       res.status(500).send('Internal server error');
-//       return;
-//     }
-//     if (results.length === 0) {
-//       res.status(404).send('Brand not found');
-//     } else {
-//       res.json(results);
-//     }
-//   });
-// });
-
 //購物車清單
 app.get("/cartlist/:id", function (req, res) {
   console.log(req.params.id);
@@ -1249,7 +1212,7 @@ app.post("/cartlinepay", function (req, res) {
   let orders_id;
   console.log(orderInfo);
   conn.query(
-    "INSERT INTO orders (user_id, brand_id,branch_name,brand_name ,orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter,orders_status, payment_status,updatedpoints,orders_pick_up,updatetime, createtime) VALUES (?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)",
+    "INSERT INTO orders (user_id, brand_id,branch_name,brand_name ,orders_total, orders_bag, terms_of_payment, invoicing_method, orders_bag_num,usePoninter, payment_status,orders_status,updatedpoints,orders_pick_up,updatetime, createtime) VALUES (?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)",
     [
       orderInfo.user_id,
       orderInfo.brand_id,
@@ -1446,4 +1409,85 @@ app.delete("/itemdelete/:itemid", function (req, res) {
       }
     }
   );
+});
+
+//更新user點數
+app.patch("/user/:id", function (req, res) {
+  conn.query(
+    "UPDATE users SET points= ?  WHERE user_id=?",
+    [req.body.updatepoints, req.params.id],
+    function (err, row) {
+      if (err) {
+        console.log(err);
+      }
+      console.log(row);
+      console.log("修改成功");
+      res.end();
+    }
+  );
+});
+
+//http://localhost:3000/cartPay/1/2
+//揪團
+app.post("/cartPay/:cartid/:uesrid", function (req, res) {
+  let cartid = req.params.cartid;
+  let userid = req.params.userid;
+  console.log(cartid, userid);
+  let data = {
+    cart_id: req.params.cartid,
+    user_id: req.params.userid,
+    user_name: req.body.user_name,
+    brand_id: req.body.brand_id,
+    branch_id: req.body.branch_id,
+    product_id: req.body.product_id,
+    item_img: req.body.item_img,
+    item_name: req.body.item_name,
+    item_size: req.body.item_size,
+    item_sugar: req.body.item_sugar,
+    item_temperatures: req.body.item_temperatures,
+    item_price: req.body.item_price,
+    item_ingredient: req.body.item_ingredient,
+    ingredient_price: req.body.ingredient_price,
+    item_quantity: req.body.item_quantity,
+    total_price: req.body.total_price,
+    updatetime: req.body.updatetime,
+    createtime: req.body.createtime,
+  };
+
+  console.log(data);
+  //res.send(JSON.stringify(req.body));
+  conn.query(
+    "INSERT INTO cartdetails(cart_id, user_id, user_name, brand_id, branch_id, product_id, item_img, item_name, item_size, item_sugar, item_temperatures, item_price, item_ingredient, ingredient_price, item_quantity, total_price, updatetime, createtime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+    [
+      data.cart_id, //req.params.cartid
+      data.user_id, //req.params.userid
+      data.user_name,
+      data.brand_id,
+      data.branch_id,
+      data.product_id,
+      data.item_img,
+      data.item_name,
+      data.item_size,
+      data.item_sugar,
+      data.item_temperatures,
+      data.item_price,
+      data.item_ingredient,
+      data.ingredient_price,
+      data.item_quantity,
+      data.total_price,
+      data.updatetime,
+      data.createtime,
+    ],
+    function (err, rows) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("成功寫入");
+      }
+    }
+  );
+
+  // "INSERT INTO order_details (orders_id, details_name, details_size, details_sugar, details_mperatures, details_ingredient, details_amount, details_quantity, details_total,updatetime, createtime) VALUES  ?",
+
+  res.end();
 });
