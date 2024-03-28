@@ -20,7 +20,11 @@ class cartPay extends Component {
   constructor(props) {
     super(props);
     this.state = {
+<<<<<<< HEAD
       payMethod: 0,
+=======
+      userImg: null,
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
       size_choose: "",
       selectedDate: "",
       currentStep: 1,
@@ -725,7 +729,29 @@ class cartPay extends Component {
           </div>
 
           <div className="d-flex me-2 align-items-center">
-            {this.loginCheck()}
+            {this.state.userData ? (
+              <h4
+                id="loginBtn"
+                className="my-auto btn headerText text-nowrap"
+                onClick={this.toggleMemberNav}
+              >
+                <img
+                  id="memberHeadshot"
+                  src={`/img/users/${this.state.userImg}`}
+                  alt="memberHeadshot"
+                  className="img-fluid my-auto mx-1 rounded-circle border"
+                />
+                會員專區▼
+              </h4>
+            ) : (
+              <h4
+                id="loginBtn"
+                className="my-auto btn headerText align-self-center"
+                onClick={this.toggleMemberNav}
+              >
+                登入/註冊
+              </h4>
+            )}
             <div id="memberNav" className="collapse">
               <div className="p-2">
                 <h4
@@ -2390,6 +2416,7 @@ class cartPay extends Component {
     this.setState({});
     window.location = "/index";
   };
+<<<<<<< HEAD
   loginCheck = () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
     if (userData) {
@@ -2419,6 +2446,15 @@ class cartPay extends Component {
           登入/註冊▼
         </h4>
       );
+=======
+  cartMenuClick = () => {
+    const userData = JSON.parse(localStorage.getItem("userdata"));
+    if (userData) {
+      const userId = userData.user_id;
+      window.location = `/cartlist/${userId}`;
+    } else {
+      window.location = "/login";
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
     }
   };
 
@@ -2461,7 +2497,26 @@ class cartPay extends Component {
     newState.bagPrice = newState.bagQuantity * 2;
     newState.lastPrice = sumPrice - newState.usePoninter + newState.bagPrice;
     this.setState(newState);
+<<<<<<< HEAD
     console.log("dbcarts", this.state.dbcarts);
+=======
+    console.log("dbcart", this.state.dbcarts);
+    const userData = JSON.parse(localStorage.getItem("userdata"));
+
+    if (userData) {
+      axios
+        .get(`http://localhost:8000/user/${userData.user_id}`)
+        .then((response) => {
+          const userImg = response.data.user_img
+            ? response.data.user_img
+            : "LeDian.png";
+          this.setState({ userImg, userData });
+        })
+        .catch((error) => {
+          console.error("Failed to fetch user data:", error);
+        });
+    }
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
   };
 }
 export default cartPay;

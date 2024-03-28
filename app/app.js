@@ -450,14 +450,24 @@ app.get("/categories/:id", function (req, res) {
 //     )
 // })
 
+
+
+
+
 const bodyParser = require("body-parser");
+<<<<<<< HEAD
 const bcrypt = require("bcrypt");
 app.use(bodyParser.json());
+=======
+const bcrypt = require('bcrypt'); 
+app.use(bodyParser.json()); 
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
 
 //註冊
 app.post("/signup", async function (req, res) {
   const { phone, email, password, password2 } = req.body;
 
+<<<<<<< HEAD
   const emailRegex =
     /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   const isEmailValid = emailRegex.test(email.toLowerCase());
@@ -502,29 +512,87 @@ app.post("/signup", async function (req, res) {
       }
 
       bcrypt.hash(password, 10, function (err, hashedPassword) {
+=======
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const isEmailValid = emailRegex.test(email.toLowerCase());
+
+    const phoneRegex = /^09[0-9]{8}$/;
+    const isPhoneValid = phoneRegex.test(phone);
+
+    if (!isEmailValid) {
+        console.log("無效的電子郵件格式");
+        return res.status(400).json({ error: "無效的電子郵件格式" });
+    }
+
+    if (!isPhoneValid) {
+        console.log("無效的手機號碼格式");
+        return res.status(400).json({ error: "無效的手機號碼格式" });
+    }
+
+    if (password !== password2) {
+        console.log("密碼與確認密碼不匹配");
+        return res.status(400).json({ error: "密碼與確認密碼不匹配" });
+    }
+
+    conn.query("SELECT * FROM users WHERE phone = ? OR email = ?", [phone, email], function (err, rows) {
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
         if (err) {
           console.error("加密密碼時發生錯誤:", err);
           return res.status(500).json({ error: "加密密碼時出錯" });
         }
 
+<<<<<<< HEAD
         conn.query(
           "INSERT INTO users (phone, email, password, createtime) VALUES (?, ?, ?, ?)",
           [phone, email, hashedPassword, onTime()],
           function (err, result) {
+=======
+        if (rows.length > 0) {
+            const existingUser = rows[0];
+            if (existingUser.phone === phone) {
+                console.log(`${phone} 已被使用`);
+                return res.status(400).json({ error: `${phone} 已被使用` });
+            }
+            if (existingUser.email === email) {
+                console.log(`${email} 已被使用`);
+                return res.status(400).json({ error: `${email} 已被使用` });
+            }
+        }
+
+        bcrypt.hash(password, 10, function (err, hashedPassword) {
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
             if (err) {
               console.error("註冊新用戶時發生錯誤:", err);
               return res.status(500).json({ error: "註冊新用戶失敗" });
             }
+<<<<<<< HEAD
             res.status(200).json({ message: "User registered successfully" });
           }
         );
       });
     }
   );
+=======
+
+            conn.query("INSERT INTO users (phone, email, password, createtime) VALUES (?, ?, ?, ?)",
+                [phone, email, hashedPassword, onTime()],
+                function (err, result) {
+                    if (err) {
+                        console.error("註冊新用戶時發生錯誤:", err);
+                        return res.status(500).json({ error: "註冊新用戶失敗" });
+                    }
+                    res.status(200).json({ message: "User registered successfully" });
+                }
+            );
+        });
+    });
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
 });
+
 
 // 登入路由
 app.post("/login", async function (req, res) {
+<<<<<<< HEAD
   const { email, password } = req.body;
   const emailRegex =
     /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -590,15 +658,83 @@ app.post("/logout", function (req, res) {
   });
 });
 
+=======
+    const { email, password } = req.body;
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const isEmailValid = emailRegex.test(email.toLowerCase());
+
+    if (!isEmailValid) {
+        console.log("無效的電子郵件格式");
+        return res.status(400).json({ error: "無效的電子郵件格式" });
+    }
+
+    conn.query('SELECT * FROM users WHERE email = ?', [email], async function (error, results, fields) {
+        if (error) {
+            console.error('查詢資料庫時出錯:', error);
+            return res.status(500).json({ error: "資料庫查詢錯誤" });
+        }
+
+        if (results.length === 0) {
+            console.log("會員不存在");
+            return res.status(404).json({ error: "會員不存在" });
+        }
+
+        const user = results[0];
+
+        try {
+            const passwordMatch = await bcrypt.compare(password, user.password);
+
+            if (passwordMatch) {
+                console.log("使用者登入成功:", user);
+                
+                req.session.userId = user.user_id;
+                req.session.userImg = user.user_img;
+                console.log("會員的 ID 是:", req.session.userId);
+            
+                return res.status(200).json({ message: "使用者登入成功", user_id: user.user_id,user_img: user.user_img });
+            
+            
+        
+            } else {
+                console.log("密碼不正確");
+                return res.status(401).json({ error: "密碼不正確" });
+            }
+        } catch (error) {
+            console.error("登入時出錯:", error);
+            return res.status(500).json({ error: "內部伺服器錯誤" });
+        }
+    });
+});
+
+
+// 登出路由
+app.post("/logout", function(req, res) {
+    req.session.destroy(function(err) {
+        if (err) {
+            console.error("登出時出錯:", err);
+            return res.status(500).json({ error: "登出時出錯" });
+        }
+        console.log("會員的 session 已成功清除");
+        return res.status(200).json({ message: "成功登出" });
+    });
+});
+
+
+
+
+
+
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
 //獲取添加時間
 const onTime = () => {
-  const date = new Date();
-  const mm = date.getMonth() + 1;
-  const dd = date.getDate();
-  const hh = date.getHours();
-  const mi = date.getMinutes();
-  const ss = date.getSeconds();
+    const date = new Date();
+    const mm = date.getMonth() + 1;
+    const dd = date.getDate();
+    const hh = date.getHours();
+    const mi = date.getMinutes();
+    const ss = date.getSeconds();
 
+<<<<<<< HEAD
   return [
     date.getFullYear(),
     "-" + (mm > 9 ? "" : "0") + mm,
@@ -607,12 +743,23 @@ const onTime = () => {
     ":" + (mi > 9 ? "" : "0") + mi,
     ":" + (ss > 9 ? "" : "0") + ss,
   ].join("");
+=======
+    return [date.getFullYear(), "-" +
+        (mm > 9 ? '' : '0') + mm, "-" +
+        (dd > 9 ? '' : '0') + dd, " " +
+        (hh > 9 ? '' : '0') + hh, ":" +
+        (mi > 9 ? '' : '0') + mi, ":" +
+        (ss > 9 ? '' : '0') + ss
+    ].join('');
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
 };
+
 
 // 忘記密碼
 app.post("/forgotPassword", async function (req, res) {
-  const { email } = req.body;
+    const { email } = req.body;
 
+<<<<<<< HEAD
   conn.query(
     "SELECT * FROM users WHERE email = ?",
     [email],
@@ -632,11 +779,40 @@ app.post("/forgotPassword", async function (req, res) {
   );
 });
 
+=======
+    conn.query('SELECT * FROM users WHERE email = ?', [email], function (error, results, fields) {
+        if (error) {
+            console.error('查詢資料庫時出錯:', error);
+            return res.status(500).json({ error: "資料庫查詢錯誤" });
+        }
+        if (results.length > 0) {
+            console.log(`${email} 存在，郵件已發送`);
+            res.status(200).json({ message: `${email} 存在，郵件已發送` });
+        } else {
+            console.log(`用戶不存在`);
+            res.status(404).json({ error: `用戶不存在` });
+        }
+    });
+});
+
+
+app.get("/userinfo/:userId", function (req, res) {
+  conn.query(
+    "SELECT * FROM 'users' WHERE user_id = ?;",
+    [req.params.userId],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
+
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
 // user 是大家共用的路由
 app.get("/user/:id", function (req, res) {
-  const userId = parseInt(req.params.id);
-  const isLoggedIn = userId != null;
+    const userId = parseInt(req.params.id);
+    const isLoggedIn = userId != null;
 
+<<<<<<< HEAD
   if (!isLoggedIn) {
     const guestData = {
       isLoggedIn: false,
@@ -683,8 +859,54 @@ app.get("/regions", function (req, res) {
     }
     res.json(rows);
   });
+=======
+    if (!isLoggedIn) {
+
+        const guestData = {
+            isLoggedIn: false,
+        };
+        console.log("User is not logged in");
+        return res.json(guestData);
+    }
+
+    conn.query("SELECT * FROM users WHERE user_id = ?;", [userId], function (err, rows) {
+        if (err) {
+            console.error("查詢錯誤:", err);
+            return res.status(500).json({ error: "查詢錯誤" });
+        }
+        if (rows.length === 0) {
+            console.log("找不到用户");
+            return res.status(404).json({ error: "找不到用户" });
+        }
+        const userData = rows[0];
+        res.json(userData); 
+    });
 });
 
+
+
+
+// 縣市表
+app.get("/city", function (req, res) {
+    conn.query("SELECT * FROM city", function (err, rows) {
+        if (err) {
+            console.error("Failed to fetch city:", err);
+            return res.status(500).json({ error: "Failed to fetch city" });
+        }
+        res.json(rows);
+    });
+});
+//區域表全
+app.get("/regions", function (req, res) {
+    conn.query("SELECT * FROM region", function (err, rows) {
+        if (err) {
+            console.error("Failed to fetch city:", err);
+            return res.status(500).json({ error: "Failed to fetch city" });
+        }
+        res.json(rows);
+    });
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
+});
 //區域表
 app.get("/region/:cityId", function (req, res) {
   const cityId = req.params.cityId;
@@ -701,6 +923,7 @@ app.get("/region/:cityId", function (req, res) {
   );
 });
 
+<<<<<<< HEAD
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "../public/img/users");
@@ -711,6 +934,70 @@ const storage = multer.diskStorage({
     const newFileName = `${user_id}.${fileExtension}`;
     cb(null, newFileName);
   },
+=======
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, '../public/img/users');
+    },
+    filename: function (req, file, cb) {
+      const user_id = parseInt(req.params.id);
+      const fileExtension = file.originalname.split('.').pop();
+      const newFileName = `${user_id}.${fileExtension}`; 
+      cb(null, newFileName);
+    }
+  });
+  
+  
+
+  const upload = multer({ storage: storage });
+  
+  app.post('/uploadUserImage/:id', upload.single('user_img'), (req, res) => {
+    if (!req.file) {
+      console.log('No file received');
+      return res.status(400).json({ error: 'No file received' });
+    }
+  
+
+    console.log('Received file:', req.file.originalname);
+    console.log('File saved as:', req.file.filename);
+
+    const fileInfo = {
+      message: 'File uploaded successfully',
+      originalName: req.file.originalname,
+      savedName: req.file.filename
+    };
+
+    return res.status(200).json(fileInfo);
+  });
+
+
+
+  
+  app.post('/updateUserData/:id', (req, res) => {
+    const user_id = parseInt(req.params.id);
+    const { email, name, phone, sex, birthday, city_id, area_id, user_img } = req.body;
+    const updatetime = onTime(); 
+    const sql = `UPDATE users SET email=?, name=?, phone=?, sex=?, birthday=?, city_id=?, area_id=?, user_img=?, updatetime=? WHERE user_id=?`;
+
+    conn.query(sql, [email, name, phone, sex, birthday, city_id, area_id, user_img, updatetime, user_id], (err, result) => {
+        if (err) {
+            console.error('Failed to update user data:', err);
+            return res.status(500).json({ error: 'Failed to update user data' });
+        }
+        console.log('User data updated successfully');
+
+        const fetchUpdatedUserDataQuery = 'SELECT * FROM users WHERE user_id = ?';
+        conn.query(fetchUpdatedUserDataQuery, [user_id], (fetchErr, fetchResult) => {
+            if (fetchErr) {
+                console.error('Failed to fetch updated user data:', fetchErr);
+                return res.status(500).json({ error: 'Failed to fetch updated user data' });
+            }
+            const updatedUserData = fetchResult[0]; 
+            return res.json(updatedUserData);
+        });
+    });
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
 });
 
 const upload = multer({ storage: storage });
@@ -780,7 +1067,54 @@ app.post("/updateUserData/:id", (req, res) => {
   );
 });
 
+app.post('/updateUserPoints/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const pointsToAdd = req.body.pointsToAdd;
+
+  conn.query('SELECT points FROM users WHERE user_id = ?', [userId], (error, results) => {
+    if (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    if (results.length === 0) {
+      res.status(404).json({ error: 'User not found or points data not found' });
+      return;
+    }
+
+    const currentPoints = results[0].points;
+    const updatedPoints = currentPoints + pointsToAdd;
+
+    conn.query('UPDATE users SET points = ? WHERE user_id = ?', [updatedPoints, userId], (error, results) => {
+      if (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+        return;
+      }
+      conn.query('UPDATE orders SET updatedpoints = 1 WHERE user_id = ?', [userId], (error, results) => {
+        if (error) {
+          console.error('Error:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+          return;
+        }
+
+        res.json({ updatedPoints: updatedPoints });
+      });
+    });
+  });
+});
+
+
+
+
+
+
+
+
+
 //驗證修改密碼前是否正確
+<<<<<<< HEAD
 app.post("/verifyPassword", async function (req, res) {
   const userId = req.body.userId;
   const oldPassword = req.body.oldPassword;
@@ -788,11 +1122,19 @@ app.post("/verifyPassword", async function (req, res) {
     "SELECT * FROM users WHERE user_id = ?",
     [userId],
     async function (error, results, fields) {
+=======
+app.post("/verifyPassword", async function(req, res) {
+  const userId = req.body.userId; 
+  const oldPassword = req.body.oldPassword; 
+  conn.query('SELECT * FROM users WHERE user_id = ?', [userId], async function (error, results, fields) {
+
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
       const user = results[0];
 
       try {
         const passwordMatch = await bcrypt.compare(oldPassword, user.password);
 
+<<<<<<< HEAD
         if (passwordMatch) {
           console.log("舊密碼驗證通過");
           res.status(200).json({ message: "舊密碼驗證通過" });
@@ -800,6 +1142,15 @@ app.post("/verifyPassword", async function (req, res) {
           console.log("舊密碼不正確");
           return res.status(401).json({ error: "舊密碼不正確" });
         }
+=======
+          if (passwordMatch) {
+              console.log("舊密碼驗證通過");
+              res.status(200).json({ message: "舊密碼驗證通過" });
+          } else {
+              console.log("舊密碼不正確");
+              return res.status(401).json({ error: "舊密碼不正確" });
+          }
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
       } catch (error) {
         console.error("驗證密碼時出錯:", error);
         return res.status(500).json({ error: "內部錯誤" });
@@ -809,13 +1160,20 @@ app.post("/verifyPassword", async function (req, res) {
 });
 
 // 修改密碼
+<<<<<<< HEAD
 app.post("/changePassword", async function (req, res) {
   const userId = req.body.userId;
   const newPassword = req.body.newPassword;
+=======
+app.post("/changePassword", async function(req, res) {
+  const userId = req.body.userId; 
+  const newPassword = req.body.newPassword; 
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
 
   try {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+<<<<<<< HEAD
     conn.query(
       "UPDATE users SET password = ? WHERE user_id = ?",
       [hashedPassword, userId],
@@ -829,14 +1187,73 @@ app.post("/changePassword", async function (req, res) {
         res.status(200).json({ message: "密碼成功更新" });
       }
     );
+=======
+      conn.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, userId], function (error, results, fields) {
+          if (error) {
+              console.error('更新密碼錯誤:', error);
+              return res.status(500).json({ error: "更新密碼錯誤" });
+          }
+
+          console.log("密碼成功更新");
+          res.status(200).json({ message: "密碼成功更新" });
+      });
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
   } catch (error) {
     console.error("新密碼錯誤:", error);
     return res.status(500).json({ error: "新密碼錯誤" });
   }
 });
 
+<<<<<<< HEAD
 app.get("/orders/:userId", (req, res) => {
   const userId = req.params.userId;
+=======
+
+app.get('/profile/orders/:userId', (req, res) => {
+  const userId = req.params.userId;
+  conn.query('SELECT * FROM orders WHERE user_id = ?', [userId], (error, results) => {
+    if (error) {
+      res.status(500).json({ error: 'Failed to fetch orders data' });
+    } else {
+
+      res.status(200).json(results); 
+    }
+  });
+});
+
+app.get('/profile/order_details/:orderId', (req, res) => {
+  const orderId = req.params.orderId;
+  conn.query('SELECT * FROM order_details WHERE orders_id = ?', [orderId], (error, results) => {
+    if (error) {
+      res.status(500).send('Internal server error');
+      return;
+    }
+    if (results.length === 0) {
+      res.status(404).send('Order details not found');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//購物車
+app.get("/cartlist/:id", function (req, res) {
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
   conn.query(
     "SELECT * FROM orders WHERE user_id = ?",
     [userId],
@@ -1489,5 +1906,140 @@ app.post("/cartPay/:cartid/:uesrid", function (req, res) {
 
   // "INSERT INTO order_details (orders_id, details_name, details_size, details_sugar, details_mperatures, details_ingredient, details_amount, details_quantity, details_total,updatetime, createtime) VALUES  ?",
 
+<<<<<<< HEAD
   res.end();
 });
+=======
+
+//       const linePayBody = {
+//         ...order,
+//         redirectUrls: {
+//           confirmUrl: "https://localhost:3000/linepay/confirm",
+//           cancelUrl: "https://localhost:3000/linepay/cancel",
+//         },
+//       };
+//       console.log("linePayBody", linePayBody);
+//       const uri = "/payments/request";
+//       const headers = createSignature(uri, linePayBody);
+//       //準備送給linepay
+//       const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`;
+
+
+//       const linePayRes = await axios.post(url, linePayBody, { headers });
+//       console.log("linePayRes", linePayRes.data);
+//       console.log(linePayRes.data.info);
+//       if (linePayRes?.data?.returnCode === "0000") {
+//         res.redirect(linePayRes?.data?.info.paymentUrl.web); //有成功返回linepay 付款網址但無法成功轉址
+//       }
+//       console.log("web", linePayRes?.data?.info.paymentUrl.web); //'https://sandbox-web-pay.line.me/web/payment/wait?transactionReserveId=RUpIVkRJQ0lyR2FBL3hzRUFQVm5XaEFxSHlXWGlHWjVmUTVVdUR2ZHg4YUJuU0NmSGpFMzdWdU1VdW41UlhEbA',
+//       console.log(linePayRes);
+//     } catch (err) {
+//       console.log(err);
+//       res.end();
+//     }
+//   })
+//   .get("/linepay/confirm", async (req, res) => {
+//     const { transactionId, orderId } = req.query;
+//     console.log(transactionId, orderId);
+
+
+//     try {
+//       const order = orders[orderId];
+//       const linePayBody = {
+//         amount: order.amount,
+//         currency: "TWD",
+//       };
+//       const uri = `/payments/${transactionId}/confirm`;
+//       const headers = createSignature(uri, linePayBody);
+//       const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`;
+//       const linePayRes = await axios.post(url, linePayBody, { headers });
+//       console.log(linePayRes);
+//       res.end();
+//       //交易成功轉址
+//     } catch (err) {
+//       res.end();
+//     }
+//   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 訂購頁面連資料庫
+app.get("/order/branch/:id", function (req, res) {
+  // res.send('ok');
+  conn.query(
+    "SELECT * FROM branch WHERE branch_id=?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
+
+
+app.get("/order/brand/:id", function (req, res) {
+  // res.send('ok');
+  conn.query(
+    "SELECT * FROM brand WHERE brand_id=?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
+
+
+app.get("/order/product/:id", function (req, res) {
+  // res.send('ok');
+  conn.query(
+    "SELECT * FROM products WHERE brand_id=?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
+app.get("/product/:id", function (req, res) {
+  // res.send('ok');
+  conn.query(
+    "SELECT * FROM products WHERE product_id=?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
+
+
+app.get("/categories/:id", function (req, res) {
+  // res.send('ok');
+  conn.query(
+    "SELECT * FROM categories WHERE brand_id=?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
+// 訂購頁面拿取尺寸資料
+// app.get("/index/order/9",function(req,res){
+//     // res.send('ok');
+//     conn.query("select*from brand,sizes where brand.brand_id = sizes.brand_id", [ ],
+//         function(err,rows) {
+//             res.send(JSON.stringify(rows));
+//         }
+//     )
+// })
+
+
+
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3

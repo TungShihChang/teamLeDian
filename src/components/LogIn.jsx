@@ -22,7 +22,6 @@ class Login extends Component {
             showLoginForm: true
         };
     }
-    // 根據使用者ID從後端獲取使用者資訊的函數
     fetchUserData = async (userId) => {
       try {
         const response = await Axios.get(`http://localhost:8000/user/${userId}`);
@@ -51,10 +50,13 @@ class Login extends Component {
         clearTimeout(this.toastTimer);
       }
     };  
+    handleSubmit = (e) => {
+      e.preventDefault();
+    }
+
   render() {
     return (
         <>
-        testtest
         <Helmet>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
@@ -85,7 +87,30 @@ class Login extends Component {
 
 
                 <div className='d-flex me-2 align-items-center'>
-                    {this.loginCheck()}
+                    {this.state.userData ? (
+                    <h4
+                        id="loginBtn"
+                        className="my-auto btn headerText text-nowrap"
+                        onClick={this.toggleMemberNav}
+                    >
+                        <img
+                        id="memberHeadshot"
+                        src={`/img/users/${this.state.userImg}`}
+                        alt="memberHeadshot"
+                        className="img-fluid my-auto mx-1 rounded-circle border"
+                        />
+                        會員專區▼
+                    </h4>
+                    ) : (
+                    <h4
+                        id="loginBtn"
+                        className="my-auto btn headerText align-self-center"
+                        onClick={this.toggleMemberNav}
+                    >
+                        登入/註冊
+                    </h4>
+                    )}
+                                
                     <div id='memberNav' className='collapse'>
                         <div className='p-2'>
                             <h4 className='headerText text-center my-2' onClick={()=>{window.location="/profile"}}>會員中心</h4><hr />
@@ -103,6 +128,7 @@ class Login extends Component {
             </div>
 
         </div>
+
 
 
         <Toast show={this.state.showToast} onClose={this.toggleToast} className="custom-toast position-fixed  p-3">
@@ -194,7 +220,7 @@ class Login extends Component {
 
         {this.state.showLoginForm && (
             <div className="email-login">
-              <form className="container" action="/login" method="post">
+              <form onSubmit={this.handleSubmit} className="container" action="/login" method="post">
                 <h5 className="text-center welcomeledian m-3">
                   歡迎使用樂點！線上訂餐系統
                 </h5>
@@ -212,10 +238,10 @@ class Login extends Component {
                   >
                     <img className="imgicon w-50" src="./img/Member_Area/password.png" alt=" " />
                   </div>
-                  <input type="password" className="login form-control" placeholder="密碼" value={this.state.password} onChange={this.password_change}/>
+                  <input type="password" className="login form-control"  placeholder="密碼" value={this.state.password} onChange={this.password_change}/>
                 </div>
                 <div className="u-form-group mb-1">
-                  <button className="btn btn-login w-100" onClick={this.login_click} type='button'>
+                  <button className="btn btn-login w-100"   onClick={this.login_click} type='button'>
                     <h5 className="fw-bold m-1">登入</h5>
                   </button>
                 </div>
@@ -253,7 +279,7 @@ class Login extends Component {
 
         {!this.state.showLoginForm && (
             <div className="email-signup">
-              <form className="container" action="/signup" method="post">
+              <form onSubmit={this.handleSubmit} className="container" action="/signup" method="post">
                 <h5 className="text-center welcomeledian m-3">
                   歡迎使用樂點！線上訂餐系統
                 </h5>
@@ -379,16 +405,11 @@ toggleMenuNav = () => {
     document.getElementById('menuNav').classList.toggle('menuNav');
 }
 logoutClick = async () => {
-    // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-        // 告訴後台使用者要登出
         await Axios.post('http://localhost:8000/logout');
-    
-        
-        //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
         console.error("登出時出錯:", error);
     }
@@ -396,19 +417,6 @@ logoutClick = async () => {
     document.getElementById('memberNav').classList.add('collapse');
     this.setState({})
     window.location = "/index"
-}
-loginCheck = () => {
-    const userData = JSON.parse(localStorage.getItem('userdata'));
-    if(userData){
-        const userImg = userData.user_img?userData.user_img:'LeDian.png';
-        return (
-            <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-                <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-                會員專區▼</h4>
-            )
-    }else {
-        return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
-    }              
 }
 cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem('userdata'));

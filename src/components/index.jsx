@@ -30,9 +30,26 @@ class index extends Component {
         productList:[
             {}
         ],
+        userImg: null,
+
      } 
 
     componentDidMount() {
+        const userData = JSON.parse(localStorage.getItem("userdata"));
+
+
+        if (userData) {
+          Axios.get(`http://localhost:8000/user/${userData.user_id}`)
+            .then((response) => {
+              const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
+              this.setState({ userImg, userData });
+            })
+            .catch((error) => {
+              console.error("Failed to fetch user data:", error);
+            });
+        }
+    
+    
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 ({ coords: { latitude: lat, longitude: lng } }) => {
@@ -90,7 +107,7 @@ class index extends Component {
         const currentLng =  this.state.currentLocation.lng
         const branchPosition  = this.state.branchPosition;
         if (currentLat !== null && currentLng !== null) {
-          const R = 6371; // 地球平均半径（km）
+          const R = 6371; // 地球平均半徑（km）
           const distances = {};
           branchPosition.forEach(branch => {
             const { branchId,lat, lng,} = branch;
@@ -100,7 +117,7 @@ class index extends Component {
                       Math.cos(this.deg2rad(currentLat)) * Math.cos(this.deg2rad(lat)) *
                       Math.sin(dLng / 2) * Math.sin(dLng / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            distances[branchId] = (R * c).toFixed(1); // 保留一位小数
+            distances[branchId] = (R * c).toFixed(1); // 保留一位小數
           });        
           this.setState({distances});
         }
@@ -115,7 +132,6 @@ class index extends Component {
         const currentLat =  this.state.currentLocation.lat
         const currentLng =  this.state.currentLocation.lng
         const distances  = this.state.distances;
-        const randomNumber = Math.floor(Math.random() * 191);
 
         return (<React.Fragment>
             <div id='header'
@@ -143,7 +159,30 @@ class index extends Component {
 
 
                 <div className='d-flex me-2 align-items-center'>
-                    {this.loginCheck()}
+                    {this.state.userData ? (
+                    <h4
+                        id="loginBtn"
+                        className="my-auto btn headerText text-nowrap"
+                        onClick={this.toggleMemberNav}
+                    >
+                        <img
+                        id="memberHeadshot"
+                        src={`/img/users/${this.state.userImg}`}
+                        alt="memberHeadshot"
+                        className="img-fluid my-auto mx-1 rounded-circle border"
+                        />
+                        會員專區▼
+                    </h4>
+                    ) : (
+                    <h4
+                        id="loginBtn"
+                        className="my-auto btn headerText align-self-center"
+                        onClick={this.toggleMemberNav}
+                    >
+                        登入/註冊
+                    </h4>
+                    )}
+                                
                     <div id='memberNav' className='collapse'>
                         <div className='p-2'>
                             <h4 className='headerText text-center my-2' onClick={()=>{window.location="/profile"}}>會員中心</h4><hr />
@@ -169,11 +208,11 @@ class index extends Component {
             </div>
             <div className="container mt-2 mb-3">
                 <div className="row d-flex justify-content-center">
-                    <div className="choose_right row">
+                    <div className="choose_right row" id='nearbyBranch'>
                             {/* 附近店鋪 */}
         {currentLat !== null && currentLng !== null ? (
         <>
-        {Object.entries(distances).filter(([branchId, distance]) => distance < 2)
+        {Object.entries(distances).filter(([branchId, distance]) => distance < 1.5)
             .sort((a, b) => a[1] - b[1]).map(([branchId, distance]) => (
                 <div key={branchId} className="col-lg-6 col-xxl-4 my-3" 
                     onClick={()=>{
@@ -296,7 +335,7 @@ class index extends Component {
                 <h3>想不到喝甚麼?來這看看!</h3>
             </div>
             <div id='rouletteArea' className='row d-flex align-items-end justify-content-center mx-auto'>
-                <Carousel data-bs-theme="dark" indicators={false} controls={false} className='col-3 mb-4 align-self-center' interval={2000} pause={false} defaultActiveIndex={randomNumber-1}> 
+                <Carousel data-bs-theme="dark" indicators={false} controls={false} className='col-3 mb-4 align-self-center' interval={2000} pause={false} defaultActiveIndex={0}> 
 
                     {this.state.productList.map((product,i)=>{
                         return(                    
@@ -321,7 +360,7 @@ class index extends Component {
                     </Carousel.Item>)
                     })}
                 </Carousel> 
-                <Carousel data-bs-theme="dark" indicators={false} controls={false} className='col-5' interval={2000} pause={false} defaultActiveIndex={randomNumber}> 
+                <Carousel data-bs-theme="dark" indicators={false} controls={false} className='col-5' interval={2000} pause={false} defaultActiveIndex={1}> 
 
                     {this.state.productList.map((product,i)=>{
                         return(                    
@@ -346,7 +385,7 @@ class index extends Component {
                     </Carousel.Item>)
                     })}
                 </Carousel> 
-                <Carousel data-bs-theme="dark" indicators={false} controls={false} className='col-3 mb-4 align-self-center' interval={2000} pause={false} defaultActiveIndex={randomNumber+1}> 
+                <Carousel data-bs-theme="dark" indicators={false} controls={false} className='col-3 mb-4 align-self-center' interval={2000} pause={false} defaultActiveIndex={2}> 
 
                     {this.state.productList.map((product,i)=>{
                         return(                    
@@ -358,10 +397,10 @@ class index extends Component {
                         alt="..."
                         /><br/><br/><br/><br/>
                         <Carousel.Caption> 
-                        <h5 className='rouletteBrand text-center'>
-                            {this.state.brandList.map((e)=>{
-                                if(product.brand_id == e.brand_id){
-                                    return e.brand_name
+                        <h5 className='rouletteBrand m-0'>
+                            {this.state.brandList.map((bracd)=>{
+                                if(product.brand_id == bracd.brand_id){
+                                    return bracd.brand_name
                                 }else{ return null}
                             })
                         }
@@ -444,19 +483,6 @@ class index extends Component {
         document.getElementById('memberNav').classList.add('collapse');
         this.setState({})
         window.location = "/index"
-    }
-    loginCheck = () => {
-        const userData = JSON.parse(localStorage.getItem('userdata'));
-        if(userData){
-            const userImg = userData.user_img?userData.user_img:'LeDian.png';
-            return (
-                <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-                    <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-                    會員專區▼</h4>
-                )
-        }else {
-            return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊▼</h4>)
-        }              
     }
     cartMenuClick = () => {
         const userData = JSON.parse(localStorage.getItem('userdata'));

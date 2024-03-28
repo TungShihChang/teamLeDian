@@ -195,11 +195,15 @@ hr.hr-line {
   min-width: 360px;
 }
 
+<<<<<<< HEAD
 .modal-content-cart {
+=======
+/* .modal-content {
+>>>>>>> 899d0be9863445fb29f261cb4472fa27d3f111a3
   border-color: #f2af21 !important;
   border-width: 8px !important;
   border-radius: 36px !important;
-}
+} */
 
 .row.sizetitle {
   flex: auto;
