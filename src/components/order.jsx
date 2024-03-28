@@ -27,20 +27,7 @@ class order extends Component {
 
     // 元件掛載撈資料
     componentDidMount = async () => {
-        const userData = JSON.parse(localStorage.getItem("userdata"));
-
-
-        if (userData) {
-          Axios.get(`http://localhost:8000/user/${userData.user_id}`)
-            .then((response) => {
-              const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
-              this.setState({ userImg, userData });
-            })
-            .catch((error) => {
-              console.error("Failed to fetch user data:", error);
-            });
-        }
-    
+        const userData = JSON.parse(localStorage.getItem("userdata"));    
     
         var resultStore = await Axios.get(`http://localhost:8000/order/branch/${this.props.match.params.id}`);
         var resultBrand = await Axios.get(`http://localhost:8000/order/brand/${resultStore.data[0].brand_id}`);
@@ -55,13 +42,34 @@ class order extends Component {
 
         this.setState(newState);
         console.log(this.state);
+         if (userData) {
+            Axios.get(`http://localhost:8000/user/${userData.user_id}`)
+              .then((response) => {
+                const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
+                this.setState({ userImg, userData });
+              })
+              .catch((error) => {
+                console.error("Failed to fetch user data:", error);
+              });
+          }
+  
     }
 
     getProductInfo = () => {
 
     }
 
-
+    handleClick = (event) => {
+        if(event.target.id == 'exampleModal'){
+            var formCheckInput = document.getElementsByClassName('form-check-input')
+            for(var i = 0; i < formCheckInput.length; i++){
+                if(formCheckInput[i].checked){
+                    formCheckInput[i].checked = false;
+                }
+            }
+        }
+        console.log(event);
+      };
     render() {
         const brandInfo = this.state.brandInfo
         const storeInfo = this.state.storeInfo
@@ -330,7 +338,7 @@ class order extends Component {
 
 
             {/* 對話盒Modal */}
-            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div className="modal fade" id="exampleModal" onClick={this.handleClick} tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div className="modal-dialog modal-lg ">
                     <div className="modal-content">
                         <div className="modal-body">
@@ -663,19 +671,6 @@ class order extends Component {
         this.setState({})
         window.location = "/index"
     }
-    // loginCheck = () => {
-    //     const userData = JSON.parse(localStorage.getItem('userdata'));
-    //     if(userData){
-    //         const userImg = userData.user_img?userData.user_img:'LeDian.png';
-    //         return (
-    //             <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-    //                 <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-    //                 會員專區▼</h4>
-    //             )
-    //     }else {
-    //         return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊</h4>)
-    //     }              
-    // }
     cartMenuClick = () => {
         const userData = JSON.parse(localStorage.getItem('userdata'));
         if(userData){

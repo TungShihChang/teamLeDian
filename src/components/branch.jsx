@@ -85,7 +85,7 @@ class index extends Component {
         const currentLng =  this.state.currentLocation.lng
         const branchPosition  = this.state.branchPosition;
         if (currentLat !== null && currentLng !== null) {
-          const R = 6371; // 地球平均半径（km）
+          const R = 6371; // 地球平均半徑（km）
           const distances = {};
           branchPosition.forEach(branch => {
             const { branchId,lat, lng,} = branch;
@@ -95,7 +95,7 @@ class index extends Component {
                       Math.cos(this.deg2rad(currentLat)) * Math.cos(this.deg2rad(lat)) *
                       Math.sin(dLng / 2) * Math.sin(dLng / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            distances[branchId] = (R * c).toFixed(1); // 保留一位小数
+            distances[branchId] = (R * c).toFixed(1); // 保留一位小數
           });        
           this.setState({distances});
         }
@@ -317,19 +317,6 @@ class index extends Component {
         this.setState({})
         window.location = "/index"
     }
-    // loginCheck = () => {
-    //     const userData = JSON.parse(localStorage.getItem('userdata'));
-    //     if(userData){
-    //         const userImg = userData.user_img?userData.user_img:'LeDian.png';
-    //         return (
-    //             <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-    //                 <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-    //                 會員專區▼</h4>
-    //             )
-    //     }else {
-    //         return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊</h4>)
-    //     }              
-    // }
     cartMenuClick = () => {
         const userData = JSON.parse(localStorage.getItem('userdata'));
         if(userData){

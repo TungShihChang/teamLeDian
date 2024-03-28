@@ -60,7 +60,7 @@ class dian extends Component {
               };
               this.setState({ userLocation }, () => {
                 if (shouldReloadData) {
-                  this.loadPageData(false); // 只在這裡重新加載數據
+                  this.loadPageData(false);
                 }
               });
               resolve();
@@ -129,12 +129,10 @@ class dian extends Component {
 
       const response = await axios.get(url);
 
-      // 篩選並過濾數據
       const validData = response.data.filter(
         (item) => item && item.branch_latitude && item.branch_longitude
       );
 
-      // 使用Promise.all並行計算距離
       const contentWithDistance = await Promise.all(
         validData.map(async (item) => {
           if (!item.branch_latitude || !item.branch_longitude) {
@@ -150,7 +148,6 @@ class dian extends Component {
           );
 
           if (parseFloat(distance) <= 1.5) {
-            // 篩選距離小於1.5公里的店家
             return {
               ...item,
               distance: distance,
@@ -161,7 +158,6 @@ class dian extends Component {
         })
       );
 
-      // 移除距離為 null 的項目
       const filteredContent = contentWithDistance.filter(
         (item) => item !== null
       );
@@ -284,7 +280,7 @@ class dian extends Component {
         } else {
           return {
             ...item,
-            distance: "N/A", // 如果 userLocation 為 null，則設置距離為 N/A
+            distance: "N/A",
           };
         }
       });
@@ -1065,7 +1061,7 @@ class dian extends Component {
                       "Item is null or missing latitude/longitude properties:",
                       item
                     );
-                    return null; // 或者其他適當的錯誤處理
+                    return null;
                   }
 
                   let distance = "";
@@ -1272,15 +1268,11 @@ class dian extends Component {
     document.getElementById("menuNav").classList.toggle("menuNav");
   };
   logoutClick = async () => {
-    // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-      // 告訴後台使用者要登出
       await axios.post("http://localhost:8000/logout");
-
-      //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
       console.error("登出時出錯:", error);
     }
@@ -1289,37 +1281,6 @@ class dian extends Component {
     this.setState({});
     window.location = "/index";
   };
-  // loginCheck = () => {
-  //   const userData = JSON.parse(localStorage.getItem("userdata"));
-  //   if (userData) {
-  //     const userImg = userData.user_img ? userData.user_img : "LeDian.png";
-  //     return (
-  //       <h4
-  //         id="loginBtn"
-  //         className="my-auto btn headerText text-nowrap"
-  //         onClick={this.toggleMemberNav}
-  //       >
-  //         <img
-  //           id="memberHeadshot"
-  //           src={`/img/users/${userImg}`}
-  //           alt="memberHeadshot"
-  //           className="img-fluid my-auto mx-1 rounded-circle border"
-  //         ></img>
-  //         會員專區▼
-  //       </h4>
-  //     );
-  //   } else {
-  //     return (
-  //       <h4
-  //         id="loginBtn"
-  //         className="my-auto btn headerText align-self-center"
-  //         onClick={this.toggleMemberNav}
-  //       >
-  //         登入/註冊▼
-  //       </h4>
-  //     );
-  //   }
-  // };
   cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
     if (userData) {
@@ -1333,7 +1294,7 @@ class dian extends Component {
   scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth", // 平滑滾動
+      behavior: "smooth",
     });
   };
 }

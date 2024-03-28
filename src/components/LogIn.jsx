@@ -399,7 +399,6 @@ logoutClick = async () => {
     this.setState({})
     window.location = "/index"
 }
-
 cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem('userdata'));
     if(userData){
