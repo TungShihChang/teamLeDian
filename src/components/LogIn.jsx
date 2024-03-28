@@ -15,8 +15,6 @@ class Login extends Component {
     password2: "",
     showToast: false,
     toastMessage: '',
-    userImg: null,
-
   };
     constructor(props) {
         super(props);
@@ -24,7 +22,6 @@ class Login extends Component {
             showLoginForm: true
         };
     }
-    // 根據使用者ID從後端獲取使用者資訊的函數
     fetchUserData = async (userId) => {
       try {
         const response = await Axios.get(`http://localhost:8000/user/${userId}`);
@@ -41,21 +38,6 @@ class Login extends Component {
     };
     componentDidMount() {
       this.setState({ showToast: false });
-      const userData = JSON.parse(localStorage.getItem("userdata"));
-
-
-      if (userData) {
-        Axios.get(`http://localhost:8000/user/${userData.user_id}`)
-          .then((response) => {
-            const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
-            this.setState({ userImg, userData });
-          })
-          .catch((error) => {
-            console.error("Failed to fetch user data:", error);
-          });
-      }
-  
-  
     }
     toggleToast = (message) => {
       this.setState({ toastMessage: message });
@@ -146,6 +128,7 @@ class Login extends Component {
             </div>
 
         </div>
+
 
 
         <Toast show={this.state.showToast} onClose={this.toggleToast} className="custom-toast position-fixed  p-3">
@@ -422,16 +405,11 @@ toggleMenuNav = () => {
     document.getElementById('menuNav').classList.toggle('menuNav');
 }
 logoutClick = async () => {
-    // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-        // 告訴後台使用者要登出
         await Axios.post('http://localhost:8000/logout');
-    
-        
-        //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
         console.error("登出時出錯:", error);
     }

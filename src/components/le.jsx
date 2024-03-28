@@ -98,7 +98,6 @@ class le extends Component {
       });
     };
 
-    // 使用 filterCondition 函數進行篩選
     const filteredData = data.filter(filterCondition);
 
     // console.log("Filtered Data:", filteredData);
@@ -556,15 +555,11 @@ class le extends Component {
     document.getElementById("menuNav").classList.toggle("menuNav");
   };
   logoutClick = async () => {
-    // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-      // 告訴後台使用者要登出
       await axios.post("http://localhost:8000/logout");
-
-      //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
       console.error("登出時出錯:", error);
     }
@@ -573,37 +568,6 @@ class le extends Component {
     this.setState({});
     window.location = "/index";
   };
-  // loginCheck = () => {
-  //   const userData = JSON.parse(localStorage.getItem("userdata"));
-  //   if (userData) {
-  //     const userImg = userData.user_img ? userData.user_img : "LeDian.png";
-  //     return (
-  //       <h4
-  //         id="loginBtn"
-  //         className="my-auto btn headerText text-nowrap"
-  //         onClick={this.toggleMemberNav}
-  //       >
-  //         <img
-  //           id="memberHeadshot"
-  //           src={`/img/users/${userImg}`}
-  //           alt="memberHeadshot"
-  //           className="img-fluid my-auto mx-1 rounded-circle border"
-  //         ></img>
-  //         會員專區▼
-  //       </h4>
-  //     );
-  //   } else {
-  //     return (
-  //       <h4
-  //         id="loginBtn"
-  //         className="my-auto btn headerText align-self-center"
-  //         onClick={this.toggleMemberNav}
-  //       >
-  //         登入/註冊▼
-  //       </h4>
-  //     );
-  //   }
-  // };
   cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
     if (userData) {
@@ -617,7 +581,7 @@ class le extends Component {
   scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth", // 平滑滾動
+      behavior: "smooth",
     });
   };
 }

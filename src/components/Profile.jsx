@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import "../css/profile.css";
 import Barcode from "./Barcode.jsx";
@@ -8,6 +8,7 @@ import { PiMedal } from "react-icons/pi";
 import { PiCoins } from "react-icons/pi";
 import { GiCancel } from "react-icons/gi";
 import { Helmet } from "react-helmet";
+import { Modal } from 'bootstrap';
 import Axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -38,16 +39,16 @@ class Profile extends Component {
       dbdata: {},
       isDataUpdated: false,
       h5Name: "",
+      ordersData: [],
       orderDetailsData: [],
+      selectedOrder: null,
+      selectedOrderDetails: null,
       userImg: null,
-
     };
   }
   componentDidMount() {
     window.addEventListener("resize", this.handleWindowResize);
     const userData = JSON.parse(localStorage.getItem("userdata"));
-
-
     if (userData) {
       Axios.get(`http://localhost:8000/user/${userData.user_id}`)
         .then((response) => {
@@ -58,7 +59,6 @@ class Profile extends Component {
           console.error("Failed to fetch user data:", error);
         });
     }
-
     if (userData.user_id != null) {
       Axios.get(`http://localhost:8000/user/${userData.user_id}`)
         .then((response) => {
@@ -74,15 +74,13 @@ class Profile extends Component {
             loading: false,
           });
 
-
-
-
-          Axios.get(`http://localhost:8000/orders/${userData.user_id}`) 
+          Axios.get(`http://localhost:8000/profile/orders/${userData.user_id}`)
             .then((ordersResponse) => {
               this.setState({ ordersData: ordersResponse.data });
+
               ordersResponse.data.forEach((order) => {
                 Axios.get(
-                  `http://localhost:8000/order_details/${order.orders_id}`
+                  `http://localhost:8000/profile/order_details/${order.orders_id}`
                 )
                   .then((orderDetailsResponse) => {
                     this.setState((prevState) => ({
@@ -93,19 +91,15 @@ class Profile extends Component {
                     }));
                   })
                   .catch((orderDetailsError) => {
-                    alert.error(
-                      "Failed to fetch order details data:",
-                      orderDetailsError
+                    console.log(
+                      "Failed to fetch order details data: " + orderDetailsError
                     );
                   });
               });
             })
             .catch((ordersError) => {
-              alert.error("Failed to fetch orders data:", ordersError);
+              console.log("Failed to fetch orders data: " + ordersError);
             });
-
-
-
 
           Axios.get("http://localhost:8000/city").then((cityResponse) => {
             const cityList = cityResponse.data;
@@ -144,25 +138,20 @@ class Profile extends Component {
       windowWidth,
       displayMinicol10: windowWidth <= 1050 ? "block" : "none",
       displayCol6: windowWidth <= 1050 ? "block" : "none",
-    });
+    });                                                                                                                               
   };
 
   handleForm1Submit = (event) => {
     event.preventDefault();
-
     const { selectedFile, userData } = this.state;
-
-    // 更新用户数据
     Axios.post(
       `http://localhost:8000/updateUserData/${userData.user_id}`,
       userData
     )
       .then(() => {
-        // 更新用户数据成功后重新获取最新用户数据
         Axios.get(`http://localhost:8000/user/${userData.user_id}`)
           .then((response) => {
             this.setState({ userData: response.data }, () => {
-              // 在状态更新后执行文件上传
               this.uploadFile(selectedFile, userData.user_id);
               this.setState({ h5Name: response.data.name });
             });
@@ -172,7 +161,6 @@ class Profile extends Component {
           });
       })
       .catch((error) => {
-        // 更新用户数据失败
         console.error("Failed to update user data:", error);
       });
   };
@@ -184,14 +172,10 @@ class Profile extends Component {
 
       Axios.post(`http://localhost:8000/uploadUserImage/${userId}`, formData)
         .then((response) => {
-          // 文件上传成功
           console.log("File uploaded successfully:", response.data.user_img);
-          // 可以根据需要在这里处理上传成功后的逻辑
         })
         .catch((error) => {
-          // 文件上传失败
           console.error("Failed to upload file:", error);
-          // 可以根据需要在这里处理上传失败后的逻辑
         });
     }
   };
@@ -259,27 +243,22 @@ class Profile extends Component {
         ...prevState.userData,
         sex: selectedGender,
       },
-      selectedGender: selectedGender, // 更新选定的性别
+      selectedGender: selectedGender,
     }));
   };
 
   handleCityChange = (event) => {
-    const selectedCityId = event.target.value; // 获取选中的城市 ID
+    const selectedCityId = event.target.value;
     console.log(selectedCityId);
-
-    // 清空现有的区域列表
     this.setState({ region: [] });
-
-    // 发送请求获取选中城市对应的所有区域
     Axios.get(`http://localhost:8000/region/${selectedCityId}`)
       .then((response) => {
-        // 更新状态以显示选中城市对应的区域列表
         this.setState((prevState) => ({
           region: response.data,
-          selectedCity: selectedCityId, // 设置选中的城市 ID
+          selectedCity: selectedCityId, 
           userData: {
             ...prevState.userData,
-            city_id: selectedCityId, // 更新用户数据中的城市 ID
+            city_id: selectedCityId,
           },
         }));
       })
@@ -289,50 +268,41 @@ class Profile extends Component {
   };
 
   handleRegionChange = (event) => {
-    const selectedRegionId = event.target.value; // 获取选中的地区 ID
+    const selectedRegionId = event.target.value;
     console.log(selectedRegionId);
     this.setState((prevState) => ({
       selectedRegion: selectedRegionId,
       userData: {
         ...prevState.userData,
-        area_id: selectedRegionId, // 更新用户数据中的地区 ID
+        area_id: selectedRegionId,
       },
     }));
   };
 
   handleDateChange = (date) => {
-    // 將日期轉換為所需格式，例如 yyyy-MM-dd
     const formattedDate = new Date(date.getTime() + 8 * 60 * 60 * 1000)
       .toISOString()
-      .split("T")[0]; // 加上 8 小時後轉換為台北時間
+      .split("T")[0];
     console.log(formattedDate);
-    // 更新狀態並執行後續操作
     this.setState((prevState) => ({
-      selectedDate: date, // 更新選擇的日期
+      selectedDate: date, 
       userData: {
         ...prevState.userData,
-        birthday: formattedDate, // 更新用戶數據中的生日日期
+        birthday: formattedDate, 
       },
     }));
   };
 
   handleFileChange = (event) => {
     const file = event.target.files[0];
-    const userData = { ...this.state.userData }; // 克隆当前用户数据
+    const userData = { ...this.state.userData };
     const userId = userData.user_id;
-
-    // 提取文件扩展名
     const fileExtension = file.name.split(".").pop();
-
-    // 构建新的文件名
     const newFileName = `${userId}.${fileExtension}`;
-
-    // 更新 userData 中的文件名
     userData.user_img = newFileName;
 
     console.log("New filename:", newFileName);
 
-    // 将文件保存到 state 中，并更新 userData 的 user_img 字段
     this.setState((prevState) => ({
       selectedFile: file,
       userData: {
@@ -347,21 +317,81 @@ class Profile extends Component {
     const formData = new FormData();
     formData.append("user_img", selectedFile);
 
-    // 发送文件到后端
     Axios.post(`http://localhost:8000/uploadUserImage`, formData)
       .then((response) => {
         console.log("File uploaded successfully:", response.data.user_img);
-        // 可以根据需要在这里处理上传成功后的逻辑
       })
       .catch((error) => {
         console.error("Failed to upload file:", error);
-        // 可以根据需要在这里处理上传失败后的逻辑
       });
   };
 
+  handleModalClose = () => {
+    const myModalElement = document.getElementById('Orders_staticBackdrop');
+    const myModal = Modal.getInstance(myModalElement);
+  
+    if (myModal) {
+      myModal.hide();
+      myModalElement.setAttribute('data-bs-backdrop', 'true');
+    } else {
+    }
+  };
+  handleOrderButtonClick = (order) => {
+    this.setState({ selectedOrder: order });
+    Axios.get(`http://localhost:8000/profile/order_details/${order.orders_id}`)
+      .then((orderDetailsResponse) => {
+        this.setState({ selectedOrderDetails: orderDetailsResponse.data });
+      })
+      .catch((orderDetailsError) => {
+        console.log("Failed to fetch order details data: " + orderDetailsError);
+      });
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.selectedOrder) {
+      const { user_id } = this.state.selectedOrder;
+      Axios.get(`http://localhost:8000/profile/orders/${user_id}`)
+        .then((response) => {
+          const orders = response.data;
+          orders.forEach((order) => {
+            const { payment_status, updatedpoints } = order;
+            if (payment_status === 1 && updatedpoints === 0) {
+              this.updateUserPoints();
+            }
+          });
+        })
+        .catch((error) => {
+          console.error('Error fetching orders data:', error);
+        });
+    }
+  }
+  updateUserPoints = () => {
+    const userData = JSON.parse(localStorage.getItem("userdata"));
+    const userId = userData.user_id; 
+    const pointsToAdd = Math.floor(this.state.selectedOrder.orders_total / 20);
+  
+    Axios.post(`http://localhost:8000/updateUserPoints/${userId}`, { pointsToAdd: pointsToAdd })
+      .then((response) => {
+        const updatedPointsToAdd = response.data;
+        console.log("Updated pointsToAdd:", updatedPointsToAdd);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+  
+
   render() {
-    const { userData, displayMinicol10, displayCol6, city, region, h5Name } =
-      this.state;
+    const {
+      userData,
+      displayMinicol10,
+      displayCol6,
+      city,
+      region,
+      h5Name,
+      ordersData,
+    } = this.state;
+    let totalQuantity = 0;
 
     return (
       <div id="profile">
@@ -437,9 +467,8 @@ class Profile extends Component {
         <div
           className="modal fade"
           id="Orders_staticBackdrop"
-          data-bs-backdrop="static"
           data-bs-keyboard="false"
-          tabindex="-1"
+          tabIndex="-1"
           aria-labelledby="Orders_staticBackdropLabel"
           aria-hidden="true"
         >
@@ -460,12 +489,16 @@ class Profile extends Component {
                       <span>{h5Name}</span>
                       <span>，感謝您的訂單</span>
                     </div>
-                    <div className="col-12 mb-3">
-                      <span>以下是您在</span>
-                      <span className="ma-1">迷客夏</span>
-                      <span>台中勤美店</span>
-                      <span>訂購的電子明細。</span>
-                    </div>
+                    {this.state.selectedOrder && (
+                      <div className="col-12 mb-3">
+                        <span>以下是您在</span>
+                        <span className="ma-1">
+                          {this.state.selectedOrder.brand_name}
+                        </span>
+                        <span>{this.state.selectedOrder.branch_name}</span>
+                        <span>訂購的電子明細。</span>
+                      </div>
+                    )}
                   </div>
                   <div className="col-3 text-end ps-0">
                     <div className="col-12">
@@ -494,92 +527,153 @@ class Profile extends Component {
                     <h4 className="fw-bold">訂單</h4>
                   </div>
                   <hr />
-                  <div className="col-5 mt-1">訂單狀態</div>
-                  <div className="col-3 px-1">
-                    <div className="sendOrder rounded-1 text-center p-1">
-                      已送出訂單
-                    </div>
-                  </div>
-                  <div className="col-4"></div>
-                  <hr className="mt-3" />
+                  {this.state.selectedOrder && (
+                    <>
+                      <div className="col-5 mt-1">訂單狀態</div>
+                      <div className="col-3 px-1">
+                        <div
+                          className={`sendOrder rounded-1 text-center p-1 ${
+                            this.state.selectedOrder.orders_status === 0
+                              ? ""
+                              : "completedOrder"
+                          }`}
+                        >
+                          {this.state.selectedOrder.orders_status === 0
+                            ? "訂單準備中"
+                            : "訂單完成"}
+                        </div>
+                      </div>
+                      <div className="col-4"></div>
+                      <hr className="mt-3" />
 
-                  <div className="col-5">預計取貨時間</div>
-                  <div className="col-7">2024-03-03 18:00</div>
-                  <hr className="mt-3" />
+                      <div className="col-5">預計取貨時間</div>
+                      <div className="col-7">
+                        {this.state.selectedOrder.orders_pick_up}
+                      </div>
+                      <hr className="mt-3" />
 
-                  <div className="col-5">付款方式</div>
-                  <div className="col-7">LINE PAY</div>
-                  <hr className="mt-3" />
+                      <div className="col-5">付款方式</div>
+                      <div className="col-7">
+                        {this.state.selectedOrder.terms_of_payment}
+                      </div>
+                      <hr className="mt-3" />
 
-                  <div className="col-5">開立發票方式</div>
-                  <div className="col-7">
-                    <span>手機載具</span>
-                    <span>-</span>
-                    <span>/AAAAAA</span>
-                  </div>
-                  <hr className="mt-3" />
+                      <div className="col-5">開立發票方式</div>
+                      <div className="col-7">
+                        <span>{this.state.selectedOrder.invoicing_method}</span>
+                      </div>
+                      <hr className="mt-3" />
 
-                  <div className="col-5">訂單建立時間</div>
-                  <div className="col-7 mb-3">2024-03-03 17:45</div>
+                      <div className="col-5">訂單建立時間</div>
+                      <div className="col-7 mb-3">
+                        {this.state.selectedOrder.createtime}
+                      </div>
 
-                  <div className="my-2 text-center rounded-2" id="pointbuttom">
-                    <div className="col-12 mt-3 mb-1 fs-5">恭喜獲得點數</div>
-                    <div className="col-12 mb-4 fs-6">
-                      <span className="mx-2">消費贈點</span>
-                      <span>3點</span>
-                    </div>
-                  </div>
-
+                      {this.state.selectedOrder.payment_status === 1 && (
+                        <div
+                          className="my-2 text-center rounded-2"
+                          id="pointbuttom"
+                        >
+                          <div className="col-12 mt-3 mb-1 fs-5">
+                            恭喜獲得點數
+                          </div>
+                          <div className="col-12 mb-4 fs-6">
+                            <span className="mx-2">消費贈點</span>
+                            <span>
+                              {Math.floor(
+                                this.state.selectedOrder.orders_total / 20
+                              )}
+                              點
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                   {/* <!-- 訂單end --> */}
 
                   <div className="col-12 mt-4">
                     <h4 className="fw-bold">明細</h4>
                   </div>
                   <hr />
-                  <div className="rounded-1 detailsbuttom my-2">
-                    <div className="col-12 mb-1 fs-6 fw-bold mt-3">
-                      焙茶乳香拿鐵
-                    </div>
-                    <div className="col-12">
-                      <p>
-                        <span>L/</span>
-                        <span>熱/</span>
-                        <span>無糖/</span>
-                        <span>$85/</span>
-                        <span>1份</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="rounded-1 detailsbuttom mb-4">
-                    <div className="col-12 mb-1 fs-6 fw-bold mt-3">塑膠袋</div>
-                    <div className="col-12 mb-3">
-                      <span>$2/</span>
-                      <span>1份</span>
-                    </div>
-                  </div>
-                  <div className="col-3">
-                    <span>商品</span>
-                  </div>
-                  <div className="col-4 text-start">X1</div>
-                  <div className="col-5 text-end">$85</div>
+                  {this.state.selectedOrderDetails && (
+                    <>
+                      {this.state.selectedOrderDetails.map((detail, index) => (
+                        <div key={`detail_${index}`} className="rounded-1 detailsbuttom my-2">
+                          <div className="col-12 mb-1 fs-6 fw-bold mt-3">
+                            {detail.details_name}
+                          </div>
+                          <div className="col-12">
+                            <p>
+                              <span>{detail.details_size}/</span>
+                              <span>{detail.details_mperatures}/</span>
+                              <span>{detail.details_sugar}/</span>
+                              <span>{detail.details_amount}/</span>
+                              <span>{detail.details_quantity}份</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
 
-                  <div className="col-3">
-                    <span>塑膠袋</span>
-                  </div>
-                  <div className="col-4 text-start">X1</div>
-                  <div className="col-5 text-end">$2</div>
+                    {this.state.selectedOrder && this.state.selectedOrder.orders_bag === 1 && (
+                       <div key="bag" className="rounded-1 detailsbuttom">
+                        <div className="col-12 mb-1 fs-6 fw-bold mt-3">塑膠袋</div>
+                        <div className="col-12 mb-3">
+                          <span>$2/</span>
+                          <span>{this.state.selectedOrder.orders_bag_num}份</span>
+                        </div>
+                      </div>
+                    )}
 
-                  <div className="col-3 text-danger">
-                    <span>點數折扣</span>
-                  </div>
-                  <div className="col-9 text-end text-danger">-$9</div>
-                  <hr className="mt-3" />
 
-                  <div className="col-3">
-                    <span>總計</span>
-                  </div>
-                  <div className="col-9 text-end mb-4">$76</div>
-                  {/* <!-- 明細end --> */}
+                    {this.state.selectedOrderDetails && (
+                      <>
+                        {this.state.selectedOrderDetails.map((detail, index) => {
+                          totalQuantity += detail.details_quantity; 
+                        })}
+
+
+                        <div className="mt-4"></div>
+                        <div className="col-3">
+                          <span>商品</span>
+                        </div>
+                        <div className="col-4 text-start">X{totalQuantity}</div>
+                        <div className="col-5 text-end">${this.state.selectedOrderDetails.reduce((totalPrice, detail) => totalPrice + detail.details_total, 0)}</div>
+                      </>
+                    )}
+
+                     
+                     {this.state.selectedOrder && (
+                    <>
+                     {this.state.selectedOrder && this.state.selectedOrder.orders_bag === 1 && (
+                      <>
+                      <div className="col-3">
+                        <span>塑膠袋</span>
+                      </div>
+                      <div className="col-4 text-start">X{this.state.selectedOrder.orders_bag_num}</div>
+                      <div className="col-5 text-end">${this.state.selectedOrder.orders_bag_num * 2}</div>
+                      </>
+                     )}
+                      {this.state.selectedOrder.usePoninter !== 0 && (
+                        <>
+                          <div className="col-3 text-danger">
+                            <span>點數折扣</span>
+                          </div>
+                          <div className="col-9 text-end text-danger">-${this.state.selectedOrder.usePoninter}</div>
+                        </>
+                      )}
+
+                      <hr className="mt-3" />
+
+                      <div className="col-3">
+                        <span>總計</span>
+                      </div>
+                      <div className="col-9 text-end mb-4">${this.state.selectedOrder.orders_total}</div>
+                      </>
+                     )}
+                  
 
                   <div className="col-12 mt-4">
                     <h4 className="fw-bold">評價此次訂單</h4>
@@ -610,22 +704,21 @@ class Profile extends Component {
                       </div>
                     </div>
                   </div>
-
-                  <div className="col-12 mb-3">
-                    <textarea
-                      className="form-control"
-                      id="exampleFormControlTextarea1"
-                      rows="3"
-                      placeholder="分享幾句評價吧！"
-                    ></textarea>
-                  </div>
                 </div>
               </div>
               {/* <!-- body end --> */}
               <div className="modal-footer">
-                <button type="button" className="btn btnmodal w-100 fs-5">
+              
+                <button
+                    type="button"
+                    className="btnmodal"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                    onClick={this.handleModalClose}
+                  >
                   送出評價
                 </button>
+              
               </div>
             </div>
           </div>
@@ -660,7 +753,7 @@ class Profile extends Component {
                             alt=" "
                           />
                           <h6 className="mb-0 mx-2 userpoint">
-                            {userData.points}
+                          {this.state.userData.points}
                           </h6>
                         </span>
                       </div>
@@ -975,16 +1068,16 @@ class Profile extends Component {
                               className="form-select"
                               aria-label="Default select example"
                               value={this.state.userData.city_id || ""}
-                              onChange={this.handleCityChange} // 修改为handleCityChange
+                              onChange={this.handleCityChange} 
                             >
                               <option value="">選擇城市</option>
                               {city &&
-                                city.map((city) => (
+                                city.map((cityItem) => (
                                   <option
-                                    key={city.city_id}
-                                    value={city.city_id}
+                                    key={cityItem.city_id}
+                                    value={cityItem.city_id}
                                   >
-                                    {city.city}
+                                    {cityItem.city}
                                   </option>
                                 ))}
                             </select>
@@ -994,16 +1087,16 @@ class Profile extends Component {
                               className="form-select"
                               aria-label="Default select example"
                               value={this.state.userData.area_id || ""}
-                              onChange={this.handleRegionChange} // 修改为handleRegionChange
+                              onChange={this.handleRegionChange} 
                             >
                               <option value="">選擇地區</option>
                               {region &&
-                                region.map((region) => (
+                                region.map((regionItem) => (
                                   <option
-                                    key={region.region_id}
-                                    value={region.region_id}
+                                    key={regionItem.region_id}
+                                    value={regionItem.region_id}
                                   >
-                                    {region.region}
+                                    {regionItem.region}
                                   </option>
                                 ))}
                             </select>
@@ -1042,7 +1135,7 @@ class Profile extends Component {
                               name="oldPassword"
                               className="form-control"
                               required
-                              autocomplete="current-password"
+                              autoComplete="current-password"
                             />
                             <div className="invalid-feedback">不能為空</div>
                           </div>
@@ -1060,7 +1153,7 @@ class Profile extends Component {
                               name="newPassword"
                               className="form-control"
                               required
-                              autocomplete="new-password"
+                              autoComplete="new-password"
                             />
                             <div className="invalid-feedback">不能為空</div>
                           </div>
@@ -1079,7 +1172,7 @@ class Profile extends Component {
                               name="newPassword"
                               className="form-control"
                               required
-                              autocomplete="new-password"
+                              autoComplete="new-password"
                             />
                             <div className="invalid-feedback">不能為空</div>
                           </div>
@@ -1098,125 +1191,50 @@ class Profile extends Component {
                     {/* <!-- 歷史訂單Historical_Orders --> */}
                     <div className="tab-pane fade" id="Historical_Orders-v">
                       <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                        <div className="col">
-                          <div className="card h-100 text-center">
-                            <div className="card-header fw-bold">完成</div>
-                            <div className="text-center mt-3">
-                              <img
-                                src="./img/Member_Area/LeDian_LOGO-05.png"
-                                className="card-img-top w-25 rounded-circle border"
-                                alt="品牌LOGO"
-                              />
+                        {ordersData.map((order, index) => (
+                          <div key={order.orderId} className="col">
+                            <div className="card h-100 text-center">
+                              <div className="card-header fw-bold">完成</div>
+                              <div className="text-center mt-3">
+                                <img
+                                  src="./img/Member_Area/LeDian_LOGO-05.png"
+                                  className="card-img-top w-25 rounded-circle border"
+                                  alt="品牌LOGO"
+                                />
+                              </div>
+                              <div className="card-body">
+                                <p className="card-title">
+                                  {order.orders_pick_up}
+                                </p>
+                                <p className="card-text">
+                                  <span className="me-2">
+                                    {order.brand_name}
+                                  </span>
+                                  <span>{order.branch_name}</span>
+                                </p>
+                              </div>
+                              <div className="card-footer">
+                                <h4 className="mt-2 fw-bold">
+                                  共 {order.orders_total} 元
+                                </h4>
+                              </div>
+                              <button
+                                className="btn btn-footer mx-3 mb-3"
+                                data-bs-toggle="modal"
+                                data-bs-target="#Orders_staticBackdrop"
+                                onClick={() =>
+                                  this.handleOrderButtonClick(order)
+                                }
+                              >
+                                請為您的訂單評分
+                              </button>
                             </div>
-                            <div className="card-body">
-                              <p className="card-title">03-13 09:30</p>
-                              <p className="card-text">
-                                <span className="me-2">迷客夏</span>
-                                <span>台中勤美店</span>
-                              </p>
-                            </div>
-                            <div className="card-footer">
-                              <h4 className="mt-2 fw-bold">共 336 元</h4>
-                            </div>
-                            <button
-                              className="btn btn-footer mx-3 mb-3"
-                              data-bs-toggle="modal"
-                              data-bs-target="#Orders_staticBackdrop"
-                            >
-                              請為您的訂單評分
-                            </button>
                           </div>
-                        </div>
-                        <div className="col">
-                          <div className="card h-100 text-center">
-                            <div className="card-header fw-bold">完成</div>
-                            <div className="text-center mt-3">
-                              <img
-                                src="./img/Member_Area/LeDian_LOGO-05.png"
-                                className="card-img-top w-25 rounded-circle border"
-                                alt="品牌LOGO"
-                              />
-                            </div>
-                            <div className="card-body">
-                              <p className="card-title">03-13 09:30</p>
-                              <p className="card-text">
-                                <span className="me-2">迷客夏</span>
-                                <span>台中勤美店</span>
-                              </p>
-                            </div>
-                            <div className="card-footer">
-                              <h4 className="mt-2 fw-bold">共 336 元</h4>
-                            </div>
-                            <button
-                              className="btn btn-footer mx-3 mb-3"
-                              data-bs-toggle="modal"
-                              data-bs-target="#Orders_staticBackdrop"
-                            >
-                              請為您的訂單評分
-                            </button>
-                          </div>
-                        </div>
-                        <div className="col">
-                          <div className="card h-100 text-center">
-                            <div className="card-header fw-bold">完成</div>
-                            <div className="text-center mt-3">
-                              <img
-                                src="./img/Member_Area/LeDian_LOGO-05.png"
-                                className="card-img-top w-25 rounded-circle border"
-                                alt="品牌LOGO"
-                              />
-                            </div>
-                            <div className="card-body">
-                              <p className="card-title">03-13 09:30</p>
-                              <p className="card-text">
-                                <span className="me-2">迷客夏</span>
-                                <span>台中勤美店</span>
-                              </p>
-                            </div>
-                            <div className="card-footer">
-                              <h4 className="mt-2 fw-bold">共 336 元</h4>
-                            </div>
-                            <button
-                              className="btn btn-footer mx-3 mb-3"
-                              data-bs-toggle="modal"
-                              data-bs-target="#Orders_staticBackdrop"
-                            >
-                              請為您的訂單評分
-                            </button>
-                          </div>
-                        </div>
-                        <div className="col">
-                          <div className="card h-100 text-center">
-                            <div className="card-header fw-bold">完成</div>
-                            <div className="text-center mt-3">
-                              <img
-                                src="./img/Member_Area/LeDian_LOGO-05.png"
-                                className="card-img-top w-25 rounded-circle border"
-                                alt="品牌LOGO"
-                              />
-                            </div>
-                            <div className="card-body">
-                              <p className="card-title">03-13 09:30</p>
-                              <p className="card-text">
-                                <span className="me-2">迷客夏</span>
-                                <span>台中勤美店</span>
-                              </p>
-                            </div>
-                            <div className="card-footer">
-                              <h4 className="mt-2 fw-bold">共 336 元</h4>
-                            </div>
-                            <button
-                              className="btn btn-footer mx-3 mb-3"
-                              data-bs-toggle="modal"
-                              data-bs-target="#Orders_staticBackdrop"
-                            >
-                              請為您的訂單評分
-                            </button>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
 
+                    {/* 載具條碼 */}
                     <div className="tab-pane fade" id="Barcode-v">
                       <div className="row mt-3">
                         <div className="col-12 text-center">歡迎使用樂點！</div>
@@ -1329,16 +1347,11 @@ toggleMenuNav = () => {
     document.getElementById('menuNav').classList.toggle('menuNav');
 }
 logoutClick = async () => {
-    // 清除localStorage
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-        // 告訴後台使用者要登出
         await Axios.post('http://localhost:8000/logout');
-    
-        
-        //   window.location = '/logout'; // 看看登出要重新定向到哪個頁面
     } catch (error) {
         console.error("登出時出錯:", error);
     }
