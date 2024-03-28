@@ -154,7 +154,7 @@ class Profile extends Component {
       windowWidth,
       displayMinicol10: windowWidth <= 1050 ? "block" : "none",
       displayCol6: windowWidth <= 1050 ? "block" : "none",
-    });                                                                                                                               
+    });
   };
 
   handleForm1Submit = (event) => {
