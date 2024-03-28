@@ -339,19 +339,6 @@ class cartList extends Component {
     this.setState({});
     window.location = "/index";
   };
-  // loginCheck = () => {
-  //     const userData = JSON.parse(localStorage.getItem('userdata'));
-  //     if(userData){
-  //         const userImg = userData.user_img?userData.user_img:'LeDian.png';
-  //         return (
-  //             <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>
-  //                 <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-  //                 會員專區▼</h4>
-  //             )
-  //     }else {
-  //         return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊</h4>)
-  //     }
-  // }
   cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
     if (userData) {
@@ -365,8 +352,15 @@ class cartList extends Component {
   componentDidMount = async () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
 
+
+    let newState = { ...this.state };
+    let result;
+    result = await axios.get("http://localhost:8000/cartlist/1");
+
+    newState.dbData = result.data;
+    this.setState(newState);
     if (userData) {
-      axios
+      await axios
         .get(`http://localhost:8000/user/${userData.user_id}`)
         .then((response) => {
           const userImg = response.data.user_img
@@ -378,14 +372,6 @@ class cartList extends Component {
           console.error("Failed to fetch user data:", error);
         });
     }
-
-    let newState = { ...this.state };
-    let result;
-    result = await axios.get("http://localhost:8000/cartlist/1");
-
-    newState.dbData = result.data;
-    this.setState(newState);
-    console.log(newState);
   };
 }
 

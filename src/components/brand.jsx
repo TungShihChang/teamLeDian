@@ -15,23 +15,21 @@ class index extends Component {
         userImg: null,
      } 
 
-    componentDidMount() {
-        const userData = JSON.parse(localStorage.getItem("userdata"));
+    async componentDidMount() {
+        const userData = await JSON.parse(localStorage.getItem("userdata"));
 
-
-        if (userData) {
-          Axios.get(`http://localhost:8000/user/${userData.user_id}`)
-            .then((response) => {
-              const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
-              this.setState({ userImg, userData });
-            })
-            .catch((error) => {
-              console.error("Failed to fetch user data:", error);
-            });
-        }
-    
-    
         this.getData();
+        if (userData) {
+            Axios.get(`http://localhost:8000/user/${userData.user_id}`)
+              .then((response) => {
+                const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
+                this.setState({ userImg, userData });
+              })
+              .catch((error) => {
+                console.error("Failed to fetch user data:", error);
+              });
+          }
+
 }
     getData = async () => {
         try {
@@ -40,7 +38,8 @@ class index extends Component {
             const newState = {...this.state};
             // newState.branchList = resultBranch.data;
             newState.brandList = resultBrand.data;
-            this.setState(newState);            
+            this.setState(newState);  
+                      
         } catch (error) {
             console.error('Error:', error);
         }
@@ -207,19 +206,6 @@ class index extends Component {
         this.setState({})
         window.location = "/index"
     }
-    // loginCheck = () => {
-    //     const userData = JSON.parse(localStorage.getItem('userdata'));
-    //     if(userData){
-    //         const userImg = userData.user_img?userData.user_img:'LeDian.png';
-    //         return (
-    //             <h4 id='loginBtn' className='my-auto btn headerText text-nowrap' onClick={this.toggleMemberNav}>                
-    //                 <img id='memberHeadshot' src={(`/img/users/${userImg}`)} alt='memberHeadshot' className='img-fluid my-auto mx-1 rounded-circle border'></img>
-    //                 會員專區▼</h4>
-    //             )
-    //     }else {
-    //         return (<h4 id='loginBtn' className='my-auto btn headerText align-self-center' onClick={this.toggleMemberNav}>登入/註冊</h4>)
-    //     }              
-    // }
     cartMenuClick = () => {
         const userData = JSON.parse(localStorage.getItem('userdata'));
         if(userData){
