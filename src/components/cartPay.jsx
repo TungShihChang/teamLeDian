@@ -666,9 +666,9 @@ class cartPay extends Component {
     let quantity = 0; //飲料數量
     let sumPrice = 0; //加總價格
     console.log("dbcarts:", newState.dbcarts);
-    if (newState.dbcarts[0].item_img === "無") {
-      newState.dbcarts[0].item_img = "LeDian_LOGO";
-    }
+    // if (newState.dbcarts[0].item_img === "無") {
+    //   newState.dbcarts[0].item_img = "LeDian_LOGO";
+    // }
     newState.dbcarts.forEach((item) => {
       quantity += item.item_quantity;
       sumPrice += item.total_price * item.item_quantity;
@@ -2544,9 +2544,9 @@ class cartPay extends Component {
     let quantity = 0; //飲料數量
     let sumPrice = 0; //加總價格
     console.log("dbcarts:", newState.dbcarts);
-    if (newState.dbcarts[0].item_img === "無") {
-      newState.dbcarts[0].item_img = "LeDian_LOGO";
-    }
+    // if (newState.dbcarts[0].item_img === "無") {
+    //   newState.dbcarts[0].item_img = "LeDian_LOGO";
+    // }
     newState.dbcarts.forEach((item) => {
       quantity += item.item_quantity;
       sumPrice += item.total_price * item.item_quantity;
