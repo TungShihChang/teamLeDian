@@ -70,7 +70,8 @@ a.a-link:hover {
 }
 
 .trash,
-.pencil {
+.pencil,
+.refresh {
   font-size: 24px;
   color: #555;
 }
@@ -161,7 +162,8 @@ hr.hr-line {
 }
 
 .trash3,
-.pen {
+.pen,
+.refresh {
   width: 20px;
 }
 
@@ -171,10 +173,12 @@ hr.hr-line {
 }
 
 .btn-edit,
-.btn-delete {
+.btn-delete,
+.refresh-btn {
   background-color: transparent;
   border: none;
   padding: 10px;
+  color: #333;
 }
 
 .btn-return,
@@ -188,20 +192,20 @@ hr.hr-line {
   font-size: 18px;
   text-decoration: none;
   font-weight: 500;
+  cursor: pointer;
 }
 
 /* 對話盒 */
 .clasImg {
-  min-width: 360px;
+  min-width: 90%;
 }
 
 .modal-content-cart {
   border-color: #f2af21 !important;
   border-width: 8px !important;
   border-radius: 36px !important;
-} */
-
-.row.sizetitle {
+}
+*/ .row.sizetitle {
   flex: auto;
   justify-content: center;
 }

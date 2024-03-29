@@ -4,6 +4,7 @@ import "bootstrap/dist/js/bootstrap.js";
 import "../css/headerAndFooter.css";
 import "../css/cart.css";
 import { FaRegTrashAlt, FaPencilAlt } from "react-icons/fa";
+import { IoReload } from "react-icons/io5";
 // import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import swal from "sweetalert";
@@ -626,32 +627,69 @@ class cartPay extends Component {
     await axios
       .delete("http://localhost:8000/itemdelete/" + itemid)
       .then(async () => {
+        this.refresh();
         //撈取購物車
-        let result = await axios.get(
-          `http://localhost:8000/cartPay/${this.props.match.params.id}`
-        );
-        newState.dbcarts = result.data;
-        let quantity = 0; //飲料數量
-        let sumPrice = 0; //加總價格
-        console.log("dbcarts:", newState.dbcarts);
-        if (newState.dbcarts[0].item_img === "無") {
-          newState.dbcarts[0].item_img = "LeDian_LOGO";
-        }
-        newState.dbcarts.forEach((item) => {
-          quantity += item.item_quantity;
-          sumPrice += item.total_price * item.item_quantity;
-        });
+        // let result = await axios.get(
+        //   `http://localhost:8000/cartPay/${this.props.match.params.id}`
+        // );
+        // newState.dbcarts = result.data;
+        // let quantity = 0; //飲料數量
+        // let sumPrice = 0; //加總價格
+        // console.log("dbcarts:", newState.dbcarts);
+        // if (newState.dbcarts[0].item_img === "無") {
+        //   newState.dbcarts[0].item_img = "LeDian_LOGO";
+        // }
+        // newState.dbcarts.forEach((item) => {
+        //   quantity += item.item_quantity;
+        //   sumPrice += item.total_price * item.item_quantity;
+        // });
 
-        // console.log("sumPrice", sumPrice);
-        newState.quantity = quantity;
-        newState.sumPrice = sumPrice;
-        newState.bagPrice = newState.bagQuantity * 2;
-        newState.lastPrice =
-          sumPrice - newState.usePoninter + newState.bagPrice;
-        // console.log(newState.dbcarts);
-        this.setState(newState);
+        // // console.log("sumPrice", sumPrice);
+        // newState.quantity = quantity;
+        // newState.sumPrice = sumPrice;
+        // newState.bagPrice = newState.bagQuantity * 2;
+        // newState.lastPrice =
+        //   sumPrice - newState.usePoninter + newState.bagPrice;
+        // // console.log(newState.dbcarts);
+        // this.setState(newState);
       });
   };
+
+  //重新刷新
+  refresh = async () => {
+    let newState = { ...this.state };
+    //撈取購物車
+    let result = await axios.get(
+      `http://localhost:8000/cartPay/${this.props.match.params.id}`
+    );
+    newState.dbcarts = result.data;
+    let quantity = 0; //飲料數量
+    let sumPrice = 0; //加總價格
+    console.log("dbcarts:", newState.dbcarts);
+    if (newState.dbcarts[0].item_img === "無") {
+      newState.dbcarts[0].item_img = "LeDian_LOGO";
+    }
+    newState.dbcarts.forEach((item) => {
+      quantity += item.item_quantity;
+      sumPrice += item.total_price * item.item_quantity;
+    });
+
+    let num = 0;
+    if (newState.bag_isChecked) {
+      newState.dbcarts.forEach((item) => {
+        num += item.item_quantity;
+      });
+      newState.bagQuantity = Math.ceil(num / 4);
+    }
+
+    newState.quantity = quantity;
+    newState.sumPrice = sumPrice;
+    newState.bagPrice = newState.bagQuantity * 2;
+    newState.lastPrice = sumPrice - newState.usePoninter + newState.bagPrice;
+
+    this.setState(newState);
+  };
+
   render() {
     const { currentStep } = this.state;
     return (
@@ -688,9 +726,7 @@ class cartPay extends Component {
             </h4>
             <h4
               className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center"
-              onClick={() => {
-                window.location = `/cartlist/${this.state.user_id}`;
-              }}
+              onClick={this.cartMenuClick}
             >
               <HiOutlineShoppingBag className="fs-4" />
               購物車
@@ -725,7 +761,7 @@ class cartPay extends Component {
           </div>
 
           <div className="d-flex me-2 align-items-center">
-            {this.state.userData ? (
+            {this.state.userdata ? (
               <h4
                 id="loginBtn"
                 className="my-auto btn headerText text-nowrap"
@@ -748,6 +784,7 @@ class cartPay extends Component {
                 登入/註冊
               </h4>
             )}
+
             <div id="memberNav" className="collapse">
               <div className="p-2">
                 <h4
@@ -768,6 +805,34 @@ class cartPay extends Component {
               </div>
             </div>
           </div>
+        </div>
+        <div
+          id="menuNav"
+          className="menuNav d-flex flex-column align-items-center"
+        >
+          <h4
+            className="menuText my-3 mainColor border-bottom border-secondary"
+            onClick={this.cartMenuClick}
+          >
+            <HiOutlineShoppingBag className="fs-4" />
+            購物車
+          </h4>
+          <h4
+            className="menuText my-3 mainColor border-bottom border-secondary"
+            onClick={() => {
+              window.location = "/brand";
+            }}
+          >
+            <PiMedal className="fs-4" />
+            品牌專區
+          </h4>
+          <h4
+            className="menuText my-3 mainColor border-bottom border-secondary"
+            onClick={this.pointinfoShow}
+          >
+            <PiCoins className="fs-4" />
+            集點資訊
+          </h4>
         </div>
 
         <div className="body-bg">
@@ -921,7 +986,7 @@ class cartPay extends Component {
                             {this.state.dbcarts.map((item, i) => {
                               return (
                                 <div className="col mt-3" key={i}>
-                                  <h3 className="text-des">{item.urse_name}</h3>
+                                  <h3 className="text-des">{item.user_name}</h3>
                                   <div className="row d-flex align-items-center">
                                     <div className="col-md-3 col-6 text-end">
                                       <img
@@ -985,6 +1050,15 @@ class cartPay extends Component {
                                 </div>
                               );
                             })}
+                          </div>
+                          <div className="col-12 d-flex justify-content-end">
+                            <button
+                              onClick={this.refresh}
+                              className="refresh-btn "
+                              type="button"
+                            >
+                              <IoReload className="refresh" /> &nbsp; 重新刷新
+                            </button>
                           </div>
 
                           {/* 對話盒Modal */}
@@ -2281,7 +2355,12 @@ class cartPay extends Component {
                         </div>
                         <div className="row">
                           <div className="col text-center mt-3 mb-5">
-                            <a className="btn-continue" href="./cartLiist.html">
+                            <a
+                              className="btn-continue"
+                              onClick={() => {
+                                window.location = "/profile";
+                              }}
+                            >
                               關閉
                             </a>
                           </div>
@@ -2412,35 +2491,13 @@ class cartPay extends Component {
     this.setState({});
     window.location = "/index";
   };
-  loginCheck = () => {
+  cartMenuClick = () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
     if (userData) {
-      const userImg = userData.user_img ? userData.user_img : "LeDian.png";
-      return (
-        <h4
-          id="loginBtn"
-          className="my-auto btn headerText text-nowrap"
-          onClick={this.toggleMemberNav}
-        >
-          <img
-            id="memberHeadshot"
-            src={`/img/users/${userImg}`}
-            alt="memberHeadshot"
-            className="img-fluid my-auto mx-1 rounded-circle border"
-          ></img>
-          會員專區▼
-        </h4>
-      );
+      const userId = userData.user_id;
+      window.location = `/cartlist/${userId}`;
     } else {
-      return (
-        <h4
-          id="loginBtn"
-          className="my-auto btn headerText align-self-center"
-          onClick={this.toggleMemberNav}
-        >
-          登入/註冊▼
-        </h4>
-      );
+      window.location = "/login";
     }
   };
 
@@ -2452,6 +2509,22 @@ class cartPay extends Component {
     let user_id = userdata.user_id;
     newState.user_id = user_id;
     console.log(user_id);
+
+    // const userData = JSON.parse(localStorage.getItem("userdata"));
+
+    if (userdata) {
+      axios
+        .get(`http://localhost:8000/user/${userdata.user_id}`)
+        .then((response) => {
+          const userImg = response.data.user_img
+            ? response.data.user_img
+            : "LeDian.png";
+          this.setState({ userImg, userdata });
+        })
+        .catch((error) => {
+          console.error("Failed to fetch user data:", error);
+        });
+    }
 
     //撈取使用者資訊
     let user = await axios.get(

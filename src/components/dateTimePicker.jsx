@@ -55,7 +55,11 @@ class DateTimePicker extends Component {
           (date.getHours() === new Date().getHours() &&
             date.getMinutes() < new Date().getMinutes())
         ) {
-          newState.selectedDate.setHours(new Date().getHours());
+          newState.selectedDate.setHours(
+            new Date().getHours() < newState.openTime_hour
+              ? newState.openTime_hour
+              : new Date().getHours()
+          );
           newState.selectedDate.setMinutes(new Date().getMinutes() + 10);
           console.log(newState);
           this.setState(newState);
