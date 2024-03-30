@@ -386,7 +386,7 @@ app.get("/dian/score_3.0", function (req, res) {
   );
 });
 
-// 訂購頁面連資料庫
+// 訂購頁面
 app.get("/order/branch/:id", function (req, res) {
   // res.send('ok');
   conn.query(
@@ -440,501 +440,699 @@ app.get("/categories/:id", function (req, res) {
     }
   );
 });
-// 訂購頁面拿取尺寸資料
-// app.get("/index/order/9",function(req,res){
-//     // res.send('ok');
-//     conn.query("select*from brand,sizes where brand.brand_id = sizes.brand_id", [ ],
-//         function(err,rows) {
-//             res.send(JSON.stringify(rows));
-//         }
-//     )
-// })
 
+// 訂購頁面 對話盒
+app.get("/order/modelproduct/:id", function (req, res) {
+  // res.send('ok');
+  conn.query(
+    "SELECT products.*, brand.brand_note FROM products INNER JOIN brand ON products.brand_id = brand.brand_id WHERE brand.brand_id = ?;",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
+});
 
+// 訂購頁面 對話盒 尺寸資料
+app.get("/order/modelproductsize/:id", function (req, res) {
+  conn.query(
+    "SELECT brand.brand_id, brand.brand_name, sizes.size_id, sizes.size_name, sizes.size_0_name,sizes.size_1_name, sizes.size_2_name FROM brand LEFT JOIN sizes ON brand.brand_id = sizes.brand_id WHERE brand.brand_id = ?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows[0]));
+    }
+  );
+});
 
+// 訂購頁面 對話盒 甜度資料
+app.get("/order/modelproductsugars/:id", function (req, res) {
+  conn.query(
+    "SELECT brand.brand_id, brand.brand_name,sugars.* FROM sugars INNER JOIN brand ON brand.brand_id = sugars.brand_id WHERE brand.brand_id = ?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows[0]));
+    }
+  );
+});
 
+// 訂購頁面 對話盒 配料表資料
+app.get("/order/modelproductingredients/:id", function (req, res) {
+  conn.query(
+    "SELECT brand.brand_id, brand.brand_name,ingredients.* FROM ingredients INNER JOIN brand ON brand.brand_id = ingredients.brand_id WHERE brand.brand_id = ? ",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows[0]));
+    }
+  );
+});
+
+// 訂購頁面 拿取甜度資料
+app.get("/order/modelsugar/:id", function (req, res) {
+  conn.query(
+    "SELECT sugars.sugar_0,sugars.sugar_1,sugars.sugar_2,sugars.sugar_2,sugars.sugar_3,sugars.sugar_4,sugars.sugar_5,sugars.sugar_6,sugars.sugar_7,sugars.sugar_8,sugars.sugar_9 FROM sugars WHERE sugar_id = ?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows[0]));
+    }
+  );
+});
+
+// 訂購頁面拿取商品尺寸資料 // 依照產品id拿取產品的尺寸的價格
+app.get("/order/moderprice/:id", function (req, res) {
+  conn.query(
+    "SELECT products.products_price_0,products.products_price_1,products.products_price_2 FROM products WHERE product_id = ?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows[0]));
+    }
+  );
+});
+
+//訂購頁面 尺寸甜度溫度資料
+app.get("/order/create/:id", function (req, res) {
+  console.log(req.params.id);
+  conn.query(
+    `SELECT * FROM products LEFT JOIN sizes ON sizes.brand_id = products.brand_id LEFT JOIN sugars ON sugars.brand_id = products.brand_id LEFT JOIN temperatures ON temperatures.brand_id = products.brand_id LEFT JOIN brand ON brand.brand_id = products.brand_id WHERE products.product_id = ?;`,
+    [req.params.id],
+    function (err, rows) {
+      let newdata = [
+        {
+          size_choose: [
+            {
+              size: rows[0].choose_size_0 ? rows[0].size_0_name : "",
+              temperatures: rows[0].choose_size_0,
+              products_price: rows[0].products_price_0,
+            },
+            {
+              size: rows[0].choose_size_1 ? rows[0].size_1_name : "",
+              temperatures: rows[0].choose_size_1,
+              products_price: rows[0].products_price_1,
+            },
+            {
+              size: rows[0].choose_size_2 ? rows[0].size_1_name : "",
+              temperatures: rows[0].choose_size_2,
+              products_price: rows[0].products_price_2,
+            },
+          ],
+        },
+
+        {
+          temperature_choose: [
+            rows[0].temperature_0,
+            rows[0].temperature_categorise_0,
+            rows[0].temperature_1,
+            rows[0].temperature_categorise_1,
+            rows[0].temperature_2,
+            rows[0].temperature_categorise_2,
+            rows[0].temperature_3,
+            rows[0].temperature_categorise_3,
+            rows[0].temperature_4,
+            rows[0].temperature_categorise_4,
+            rows[0].temperature_5,
+            rows[0].temperature_categorise_5,
+            rows[0].temperature_6,
+            rows[0].temperature_categorise_6,
+            rows[0].temperature_7,
+            rows[0].temperature_categorise_7,
+          ],
+        },
+
+        {
+          sugar_choose: [
+            rows[0].sugar_0,
+            rows[0].sugar_1,
+            rows[0].sugar_2,
+            rows[0].sugar_3,
+            rows[0].sugar_4,
+            rows[0].sugar_5,
+            rows[0].sugar_6,
+            rows[0].sugar_7,
+            rows[0].sugar_8,
+            rows[0].sugar_9,
+          ],
+        },
+
+        {
+          product: {
+            // product_name: rows[0].product_name,
+            // product_img: rows[0].product_img,
+            // choose_size_0: 0,
+            // choose_size_1: 3,
+            // choose_size_2: 0,
+            choose_sugar: rows[0].choose_sugar,
+            choose_ingredient: rows[0].choose_ingredient,
+            products_price_0: rows[0].products_price_0,
+            products_price_1: rows[0].products_price_1,
+            products_price_2: rows[0].products_price_2,
+          },
+        },
+      ];
+      console.log(newdata);
+      res.send(JSON.stringify(newdata));
+    }
+  );
+});
 
 const bodyParser = require("body-parser");
-const bcrypt = require('bcrypt'); 
-app.use(bodyParser.json()); 
+const bcrypt = require("bcrypt");
+app.use(bodyParser.json());
 
 //註冊
 app.post("/signup", async function (req, res) {
-    const { phone, email, password, password2 } = req.body;
+  const { phone, email, password, password2 } = req.body;
 
-    const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    const isEmailValid = emailRegex.test(email.toLowerCase());
+  const emailRegex =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const isEmailValid = emailRegex.test(email.toLowerCase());
 
-    const phoneRegex = /^09[0-9]{8}$/;
-    const isPhoneValid = phoneRegex.test(phone);
+  const phoneRegex = /^09[0-9]{8}$/;
+  const isPhoneValid = phoneRegex.test(phone);
 
-    if (!isEmailValid) {
-        console.log("無效的電子郵件格式");
-        return res.status(400).json({ error: "無效的電子郵件格式" });
-    }
+  if (!isEmailValid) {
+    console.log("無效的電子郵件格式");
+    return res.status(400).json({ error: "無效的電子郵件格式" });
+  }
 
-    if (!isPhoneValid) {
-        console.log("無效的手機號碼格式");
-        return res.status(400).json({ error: "無效的手機號碼格式" });
-    }
+  if (!isPhoneValid) {
+    console.log("無效的手機號碼格式");
+    return res.status(400).json({ error: "無效的手機號碼格式" });
+  }
 
-    if (password !== password2) {
-        console.log("密碼與確認密碼不匹配");
-        return res.status(400).json({ error: "密碼與確認密碼不匹配" });
-    }
+  if (password !== password2) {
+    console.log("密碼與確認密碼不匹配");
+    return res.status(400).json({ error: "密碼與確認密碼不匹配" });
+  }
 
-    conn.query("SELECT * FROM users WHERE phone = ? OR email = ?", [phone, email], function (err, rows) {
+  conn.query(
+    "SELECT * FROM users WHERE phone = ? OR email = ?",
+    [phone, email],
+    function (err, rows) {
+      if (err) {
+        console.error("查詢用戶時發生錯誤:", err);
+        return res.status(500).json({ error: "查詢用戶時出錯" });
+      }
+
+      if (rows.length > 0) {
+        const existingUser = rows[0];
+        if (existingUser.phone === phone) {
+          console.log(`${phone} 已被使用`);
+          return res.status(400).json({ error: `${phone} 已被使用` });
+        }
+        if (existingUser.email === email) {
+          console.log(`${email} 已被使用`);
+          return res.status(400).json({ error: `${email} 已被使用` });
+        }
+      }
+
+      bcrypt.hash(password, 10, function (err, hashedPassword) {
         if (err) {
-            console.error("查詢用戶時發生錯誤:", err);
-            return res.status(500).json({ error: "查詢用戶時出錯" });
+          console.error("加密密碼時發生錯誤:", err);
+          return res.status(500).json({ error: "加密密碼時出錯" });
         }
 
-        if (rows.length > 0) {
-            const existingUser = rows[0];
-            if (existingUser.phone === phone) {
-                console.log(`${phone} 已被使用`);
-                return res.status(400).json({ error: `${phone} 已被使用` });
-            }
-            if (existingUser.email === email) {
-                console.log(`${email} 已被使用`);
-                return res.status(400).json({ error: `${email} 已被使用` });
-            }
-        }
-
-        bcrypt.hash(password, 10, function (err, hashedPassword) {
+        conn.query(
+          "INSERT INTO users (phone, email, password, createtime) VALUES (?, ?, ?, ?)",
+          [phone, email, hashedPassword, onTime()],
+          function (err, result) {
             if (err) {
-                console.error("加密密碼時發生錯誤:", err);
-                return res.status(500).json({ error: "加密密碼時出錯" });
+              console.error("註冊新用戶時發生錯誤:", err);
+              return res.status(500).json({ error: "註冊新用戶失敗" });
             }
-
-            conn.query("INSERT INTO users (phone, email, password, createtime) VALUES (?, ?, ?, ?)",
-                [phone, email, hashedPassword, onTime()],
-                function (err, result) {
-                    if (err) {
-                        console.error("註冊新用戶時發生錯誤:", err);
-                        return res.status(500).json({ error: "註冊新用戶失敗" });
-                    }
-                    res.status(200).json({ message: "User registered successfully" });
-                }
-            );
-        });
-    });
+            res.status(200).json({ message: "User registered successfully" });
+          }
+        );
+      });
+    }
+  );
 });
-
 
 // 登入路由
 app.post("/login", async function (req, res) {
-    const { email, password } = req.body;
-    const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    const isEmailValid = emailRegex.test(email.toLowerCase());
+  const { email, password } = req.body;
+  const emailRegex =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const isEmailValid = emailRegex.test(email.toLowerCase());
 
-    if (!isEmailValid) {
-        console.log("無效的電子郵件格式");
-        return res.status(400).json({ error: "無效的電子郵件格式" });
-    }
+  if (!isEmailValid) {
+    console.log("無效的電子郵件格式");
+    return res.status(400).json({ error: "無效的電子郵件格式" });
+  }
 
-    conn.query('SELECT * FROM users WHERE email = ?', [email], async function (error, results, fields) {
-        if (error) {
-            console.error('查詢資料庫時出錯:', error);
-            return res.status(500).json({ error: "資料庫查詢錯誤" });
-        }
-
-        if (results.length === 0) {
-            console.log("會員不存在");
-            return res.status(404).json({ error: "會員不存在" });
-        }
-
-        const user = results[0];
-
-        try {
-            const passwordMatch = await bcrypt.compare(password, user.password);
-
-            if (passwordMatch) {
-                console.log("使用者登入成功:", user);
-                
-                req.session.userId = user.user_id;
-                req.session.userImg = user.user_img;
-                console.log("會員的 ID 是:", req.session.userId);
-            
-                return res.status(200).json({ message: "使用者登入成功", user_id: user.user_id,user_img: user.user_img });
-            
-            
-        
-            } else {
-                console.log("密碼不正確");
-                return res.status(401).json({ error: "密碼不正確" });
-            }
-        } catch (error) {
-            console.error("登入時出錯:", error);
-            return res.status(500).json({ error: "內部伺服器錯誤" });
-        }
-    });
-});
-
-
-// 登出路由
-app.post("/logout", function(req, res) {
-    req.session.destroy(function(err) {
-        if (err) {
-            console.error("登出時出錯:", err);
-            return res.status(500).json({ error: "登出時出錯" });
-        }
-        console.log("會員的 session 已成功清除");
-        return res.status(200).json({ message: "成功登出" });
-    });
-});
-
-
-
-
-
-
-//獲取添加時間
-const onTime = () => {
-    const date = new Date();
-    const mm = date.getMonth() + 1;
-    const dd = date.getDate();
-    const hh = date.getHours();
-    const mi = date.getMinutes();
-    const ss = date.getSeconds();
-
-    return [date.getFullYear(), "-" +
-        (mm > 9 ? '' : '0') + mm, "-" +
-        (dd > 9 ? '' : '0') + dd, " " +
-        (hh > 9 ? '' : '0') + hh, ":" +
-        (mi > 9 ? '' : '0') + mi, ":" +
-        (ss > 9 ? '' : '0') + ss
-    ].join('');
-};
-
-
-// 忘記密碼
-app.post("/forgotPassword", async function (req, res) {
-    const { email } = req.body;
-
-    conn.query('SELECT * FROM users WHERE email = ?', [email], function (error, results, fields) {
-        if (error) {
-            console.error('查詢資料庫時出錯:', error);
-            return res.status(500).json({ error: "資料庫查詢錯誤" });
-        }
-        if (results.length > 0) {
-            console.log(`${email} 存在，郵件已發送`);
-            res.status(200).json({ message: `${email} 存在，郵件已發送` });
-        } else {
-            console.log(`用戶不存在`);
-            res.status(404).json({ error: `用戶不存在` });
-        }
-    });
-});
-
-
-// user 是大家共用的路由
-app.get("/user/:id", function (req, res) {
-    const userId = parseInt(req.params.id);
-    const isLoggedIn = userId != null;
-
-    if (!isLoggedIn) {
-
-        const guestData = {
-            isLoggedIn: false,
-        };
-        console.log("User is not logged in");
-        return res.json(guestData);
-    }
-
-    conn.query("SELECT * FROM users WHERE user_id = ?;", [userId], function (err, rows) {
-        if (err) {
-            console.error("查詢錯誤:", err);
-            return res.status(500).json({ error: "查詢錯誤" });
-        }
-        if (rows.length === 0) {
-            console.log("找不到用户");
-            return res.status(404).json({ error: "找不到用户" });
-        }
-        const userData = rows[0];
-        res.json(userData); 
-    });
-});
-
-
-
-
-// 縣市表
-app.get("/city", function (req, res) {
-    conn.query("SELECT * FROM city", function (err, rows) {
-        if (err) {
-            console.error("Failed to fetch city:", err);
-            return res.status(500).json({ error: "Failed to fetch city" });
-        }
-        res.json(rows);
-    });
-});
-//區域表全
-app.get("/regions", function (req, res) {
-    conn.query("SELECT * FROM region", function (err, rows) {
-        if (err) {
-            console.error("Failed to fetch city:", err);
-            return res.status(500).json({ error: "Failed to fetch city" });
-        }
-        res.json(rows);
-    });
-});
-//區域表
-app.get("/region/:cityId", function (req, res) {
-  const cityId = req.params.cityId;
-  conn.query("SELECT * FROM region WHERE city_id = ?", [cityId], function (err, rows) {
-      if (err) {
-          console.error("Failed to fetch region:", err);
-          return res.status(500).json({ error: "Failed to fetch region" });
-      }
-      res.json(rows);
-  });
-});
-
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, '../public/img/users');
-    },
-    filename: function (req, file, cb) {
-      const user_id = parseInt(req.params.id);
-      const fileExtension = file.originalname.split('.').pop();
-      const newFileName = `${user_id}.${fileExtension}`; 
-      cb(null, newFileName);
-    }
-  });
-  
-  
-
-  const upload = multer({ storage: storage });
-  
-  app.post('/uploadUserImage/:id', upload.single('user_img'), (req, res) => {
-    if (!req.file) {
-      console.log('No file received');
-      return res.status(400).json({ error: 'No file received' });
-    }
-  
-
-    console.log('Received file:', req.file.originalname);
-    console.log('File saved as:', req.file.filename);
-
-    const fileInfo = {
-      message: 'File uploaded successfully',
-      originalName: req.file.originalname,
-      savedName: req.file.filename
-    };
-
-    return res.status(200).json(fileInfo);
-  });
-
-
-
-  
-  app.post('/updateUserData/:id', (req, res) => {
-    const user_id = parseInt(req.params.id);
-    const { email, name, phone, sex, birthday, city_id, area_id, user_img } = req.body;
-    const updatetime = onTime(); 
-    const sql = `UPDATE users SET email=?, name=?, phone=?, sex=?, birthday=?, city_id=?, area_id=?, user_img=?, updatetime=? WHERE user_id=?`;
-
-    conn.query(sql, [email, name, phone, sex, birthday, city_id, area_id, user_img, updatetime, user_id], (err, result) => {
-        if (err) {
-            console.error('Failed to update user data:', err);
-            return res.status(500).json({ error: 'Failed to update user data' });
-        }
-        console.log('User data updated successfully');
-
-        const fetchUpdatedUserDataQuery = 'SELECT * FROM users WHERE user_id = ?';
-        conn.query(fetchUpdatedUserDataQuery, [user_id], (fetchErr, fetchResult) => {
-            if (fetchErr) {
-                console.error('Failed to fetch updated user data:', fetchErr);
-                return res.status(500).json({ error: 'Failed to fetch updated user data' });
-            }
-            const updatedUserData = fetchResult[0]; 
-            return res.json(updatedUserData);
-        });
-    });
-});
-
-
-app.post('/updateUserPoints/:userId', (req, res) => {
-  const userId = req.params.userId;
-  const pointsToAdd = req.body.pointsToAdd;
-
-  conn.query('SELECT points FROM users WHERE user_id = ?', [userId], (error, results) => {
-    if (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
-    }
-
-    if (results.length === 0) {
-      res.status(404).json({ error: 'User not found or points data not found' });
-      return;
-    }
-
-    const currentPoints = results[0].points;
-    const updatedPoints = currentPoints + pointsToAdd;
-
-    conn.query('UPDATE users SET points = ? WHERE user_id = ?', [updatedPoints, userId], (error, results) => {
+  conn.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email],
+    async function (error, results, fields) {
       if (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-        return;
+        console.error("查詢資料庫時出錯:", error);
+        return res.status(500).json({ error: "資料庫查詢錯誤" });
       }
-      conn.query('UPDATE orders SET updatedpoints = 1 WHERE user_id = ?', [userId], (error, results) => {
-        if (error) {
-          console.error('Error:', error);
-          res.status(500).json({ error: 'Internal Server Error' });
-          return;
-        }
 
-        res.json({ updatedPoints: updatedPoints });
-      });
-    });
-  });
-});
-
-
-
-
-
-
-
-
-
-//驗證修改密碼前是否正確
-app.post("/verifyPassword", async function(req, res) {
-  const userId = req.body.userId; 
-  const oldPassword = req.body.oldPassword; 
-  conn.query('SELECT * FROM users WHERE user_id = ?', [userId], async function (error, results, fields) {
+      if (results.length === 0) {
+        console.log("會員不存在");
+        return res.status(404).json({ error: "會員不存在" });
+      }
 
       const user = results[0];
 
       try {
-          const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
-          if (passwordMatch) {
-              console.log("舊密碼驗證通過");
-              res.status(200).json({ message: "舊密碼驗證通過" });
-          } else {
-              console.log("舊密碼不正確");
-              return res.status(401).json({ error: "舊密碼不正確" });
-          }
+        if (passwordMatch) {
+          console.log("使用者登入成功:", user);
+
+          req.session.userId = user.user_id;
+          req.session.userImg = user.user_img;
+          console.log("會員的 ID 是:", req.session.userId);
+
+          return res.status(200).json({
+            message: "使用者登入成功",
+            user_id: user.user_id,
+            user_img: user.user_img,
+          });
+        } else {
+          console.log("密碼不正確");
+          return res.status(401).json({ error: "密碼不正確" });
+        }
       } catch (error) {
-          console.error("驗證密碼時出錯:", error);
-          return res.status(500).json({ error: "內部錯誤" });
+        console.error("登入時出錯:", error);
+        return res.status(500).json({ error: "內部伺服器錯誤" });
       }
+    }
+  );
+});
+
+// 登出路由
+app.post("/logout", function (req, res) {
+  req.session.destroy(function (err) {
+    if (err) {
+      console.error("登出時出錯:", err);
+      return res.status(500).json({ error: "登出時出錯" });
+    }
+    console.log("會員的 session 已成功清除");
+    return res.status(200).json({ message: "成功登出" });
   });
+});
+
+//獲取添加時間
+const onTime = () => {
+  const date = new Date();
+  const mm = date.getMonth() + 1;
+  const dd = date.getDate();
+  const hh = date.getHours();
+  const mi = date.getMinutes();
+  const ss = date.getSeconds();
+
+  return [
+    date.getFullYear(),
+    "-" + (mm > 9 ? "" : "0") + mm,
+    "-" + (dd > 9 ? "" : "0") + dd,
+    " " + (hh > 9 ? "" : "0") + hh,
+    ":" + (mi > 9 ? "" : "0") + mi,
+    ":" + (ss > 9 ? "" : "0") + ss,
+  ].join("");
+};
+
+// 忘記密碼
+app.post("/forgotPassword", async function (req, res) {
+  const { email } = req.body;
+
+  conn.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email],
+    function (error, results, fields) {
+      if (error) {
+        console.error("查詢資料庫時出錯:", error);
+        return res.status(500).json({ error: "資料庫查詢錯誤" });
+      }
+      if (results.length > 0) {
+        console.log(`${email} 存在，郵件已發送`);
+        res.status(200).json({ message: `${email} 存在，郵件已發送` });
+      } else {
+        console.log(`用戶不存在`);
+        res.status(404).json({ error: `用戶不存在` });
+      }
+    }
+  );
+});
+
+// user 是大家共用的路由
+app.get("/user/:id", function (req, res) {
+  const userId = parseInt(req.params.id);
+  const isLoggedIn = userId != null;
+
+  if (!isLoggedIn) {
+    const guestData = {
+      isLoggedIn: false,
+    };
+    console.log("User is not logged in");
+    return res.json(guestData);
+  }
+
+  conn.query(
+    "SELECT * FROM users WHERE user_id = ?;",
+    [userId],
+    function (err, rows) {
+      if (err) {
+        console.error("查詢錯誤:", err);
+        return res.status(500).json({ error: "查詢錯誤" });
+      }
+      if (rows.length === 0) {
+        console.log("找不到用户");
+        return res.status(404).json({ error: "找不到用户" });
+      }
+      const userData = rows[0];
+      res.json(userData);
+    }
+  );
+});
+
+// 縣市表
+app.get("/city", function (req, res) {
+  conn.query("SELECT * FROM city", function (err, rows) {
+    if (err) {
+      console.error("Failed to fetch city:", err);
+      return res.status(500).json({ error: "Failed to fetch city" });
+    }
+    res.json(rows);
+  });
+});
+//區域表全
+app.get("/regions", function (req, res) {
+  conn.query("SELECT * FROM region", function (err, rows) {
+    if (err) {
+      console.error("Failed to fetch city:", err);
+      return res.status(500).json({ error: "Failed to fetch city" });
+    }
+    res.json(rows);
+  });
+});
+//區域表
+app.get("/region/:cityId", function (req, res) {
+  const cityId = req.params.cityId;
+  conn.query(
+    "SELECT * FROM region WHERE city_id = ?",
+    [cityId],
+    function (err, rows) {
+      if (err) {
+        console.error("Failed to fetch region:", err);
+        return res.status(500).json({ error: "Failed to fetch region" });
+      }
+      res.json(rows);
+    }
+  );
+});
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "../public/img/users");
+  },
+  filename: function (req, file, cb) {
+    const user_id = parseInt(req.params.id);
+    const fileExtension = file.originalname.split(".").pop();
+    const newFileName = `${user_id}.${fileExtension}`;
+    cb(null, newFileName);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+app.post("/uploadUserImage/:id", upload.single("user_img"), (req, res) => {
+  if (!req.file) {
+    console.log("No file received");
+    return res.status(400).json({ error: "No file received" });
+  }
+
+  console.log("Received file:", req.file.originalname);
+  console.log("File saved as:", req.file.filename);
+
+  const fileInfo = {
+    message: "File uploaded successfully",
+    originalName: req.file.originalname,
+    savedName: req.file.filename,
+  };
+
+  return res.status(200).json(fileInfo);
+});
+
+app.post("/updateUserData/:id", (req, res) => {
+  const user_id = parseInt(req.params.id);
+  const { email, name, phone, sex, birthday, city_id, area_id, user_img } =
+    req.body;
+  const updatetime = onTime();
+  const sql = `UPDATE users SET email=?, name=?, phone=?, sex=?, birthday=?, city_id=?, area_id=?, user_img=?, updatetime=? WHERE user_id=?`;
+
+  conn.query(
+    sql,
+    [
+      email,
+      name,
+      phone,
+      sex,
+      birthday,
+      city_id,
+      area_id,
+      user_img,
+      updatetime,
+      user_id,
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("Failed to update user data:", err);
+        return res.status(500).json({ error: "Failed to update user data" });
+      }
+      console.log("User data updated successfully");
+
+      const fetchUpdatedUserDataQuery = "SELECT * FROM users WHERE user_id = ?";
+      conn.query(
+        fetchUpdatedUserDataQuery,
+        [user_id],
+        (fetchErr, fetchResult) => {
+          if (fetchErr) {
+            console.error("Failed to fetch updated user data:", fetchErr);
+            return res
+              .status(500)
+              .json({ error: "Failed to fetch updated user data" });
+          }
+          const updatedUserData = fetchResult[0];
+          return res.json(updatedUserData);
+        }
+      );
+    }
+  );
+});
+
+app.post("/updateUserPoints/:userId", (req, res) => {
+  const userId = req.params.userId;
+  const pointsToAdd = req.body.pointsToAdd;
+
+  conn.query(
+    "SELECT points FROM users WHERE user_id = ?",
+    [userId],
+    (error, results) => {
+      if (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
+      }
+
+      if (results.length === 0) {
+        res
+          .status(404)
+          .json({ error: "User not found or points data not found" });
+        return;
+      }
+
+      const currentPoints = results[0].points;
+      const updatedPoints = currentPoints + pointsToAdd;
+
+      conn.query(
+        "UPDATE users SET points = ? WHERE user_id = ?",
+        [updatedPoints, userId],
+        (error, results) => {
+          if (error) {
+            console.error("Error:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+            return;
+          }
+          conn.query(
+            "UPDATE orders SET updatedpoints = 1 WHERE user_id = ?",
+            [userId],
+            (error, results) => {
+              if (error) {
+                console.error("Error:", error);
+                res.status(500).json({ error: "Internal Server Error" });
+                return;
+              }
+
+              res.json({ updatedPoints: updatedPoints });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
+//驗證修改密碼前是否正確
+app.post("/verifyPassword", async function (req, res) {
+  const userId = req.body.userId;
+  const oldPassword = req.body.oldPassword;
+  conn.query(
+    "SELECT * FROM users WHERE user_id = ?",
+    [userId],
+    async function (error, results, fields) {
+      const user = results[0];
+
+      try {
+        const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+
+        if (passwordMatch) {
+          console.log("舊密碼驗證通過");
+          res.status(200).json({ message: "舊密碼驗證通過" });
+        } else {
+          console.log("舊密碼不正確");
+          return res.status(401).json({ error: "舊密碼不正確" });
+        }
+      } catch (error) {
+        console.error("驗證密碼時出錯:", error);
+        return res.status(500).json({ error: "內部錯誤" });
+      }
+    }
+  );
 });
 
 // 修改密碼
-app.post("/changePassword", async function(req, res) {
-  const userId = req.body.userId; 
-  const newPassword = req.body.newPassword; 
+app.post("/changePassword", async function (req, res) {
+  const userId = req.body.userId;
+  const newPassword = req.body.newPassword;
 
   try {
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-      conn.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, userId], function (error, results, fields) {
-          if (error) {
-              console.error('更新密碼錯誤:', error);
-              return res.status(500).json({ error: "更新密碼錯誤" });
-          }
+    conn.query(
+      "UPDATE users SET password = ? WHERE user_id = ?",
+      [hashedPassword, userId],
+      function (error, results, fields) {
+        if (error) {
+          console.error("更新密碼錯誤:", error);
+          return res.status(500).json({ error: "更新密碼錯誤" });
+        }
 
-          console.log("密碼成功更新");
-          res.status(200).json({ message: "密碼成功更新" });
-      });
+        console.log("密碼成功更新");
+        res.status(200).json({ message: "密碼成功更新" });
+      }
+    );
   } catch (error) {
-      console.error("新密碼錯誤:", error);
-      return res.status(500).json({ error: "新密碼錯誤" });
+    console.error("新密碼錯誤:", error);
+    return res.status(500).json({ error: "新密碼錯誤" });
   }
 });
 
-
-app.get('/profile/orders/:userId', (req, res) => {
+app.get("/profile/orders/:userId", (req, res) => {
   const userId = req.params.userId;
-  conn.query('SELECT * FROM orders WHERE user_id = ?', [userId], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: 'Failed to fetch orders data' });
-    } else {
-
-      res.status(200).json(results); 
+  conn.query(
+    "SELECT * FROM orders WHERE user_id = ?",
+    [userId],
+    (error, results) => {
+      if (error) {
+        res.status(500).json({ error: "Failed to fetch orders data" });
+      } else {
+        res.status(200).json(results);
+      }
     }
-  });
+  );
 });
 
-app.get('/profile/order_details/:orderId', (req, res) => {
+app.get("/profile/order_details/:orderId", (req, res) => {
   const orderId = req.params.orderId;
-  conn.query('SELECT * FROM order_details WHERE orders_id = ?', [orderId], (error, results) => {
-    if (error) {
-      res.status(500).send('Internal server error');
-      return;
+  conn.query(
+    "SELECT * FROM order_details WHERE orders_id = ?",
+    [orderId],
+    (error, results) => {
+      if (error) {
+        res.status(500).send("Internal server error");
+        return;
+      }
+      if (results.length === 0) {
+        res.status(404).send("Order details not found");
+      } else {
+        res.json(results);
+      }
     }
-    if (results.length === 0) {
-      res.status(404).send('Order details not found');
-    } else {
-      res.json(results);
-    }
-  });
+  );
 });
-
-
 
 //新增條碼
-app.post('/user/:userId/barcode', (req, res) => {
+app.post("/user/:userId/barcode", (req, res) => {
   const userId = req.params.userId;
   const { barcodeValue } = req.body;
-  conn.query('UPDATE users SET barcode = ? WHERE user_id = ?', [barcodeValue, userId], (error, results) => {
-    if (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
+  conn.query(
+    "UPDATE users SET barcode = ? WHERE user_id = ?",
+    [barcodeValue, userId],
+    (error, results) => {
+      if (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
+      }
+      res.json({ message: "Barcode saved successfully" });
     }
-    res.json({ message: 'Barcode saved successfully' });
-  });
+  );
 });
 //更新條碼
-app.put('/user/:userId/barcode', (req, res) => {
+app.put("/user/:userId/barcode", (req, res) => {
   const userId = req.params.userId;
   const { barcode } = req.body;
-  conn.query('UPDATE users SET barcode = ? WHERE user_id = ?', [barcode, userId], (error, results) => {
-    if (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
+  conn.query(
+    "UPDATE users SET barcode = ? WHERE user_id = ?",
+    [barcode, userId],
+    (error, results) => {
+      if (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
+      }
+      res.json({ message: "Barcode updated successfully" });
     }
-    res.json({ message: 'Barcode updated successfully' });
-  });
+  );
 });
 //刪除條碼
-app.delete('/user/:userId/barcode', (req, res) => {
+app.delete("/user/:userId/barcode", (req, res) => {
   const userId = req.params.userId;
-  conn.query('UPDATE users SET barcode = NULL WHERE user_id = ?', [userId], (error, results) => {
-    if (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
+  conn.query(
+    "UPDATE users SET barcode = NULL WHERE user_id = ?",
+    [userId],
+    (error, results) => {
+      if (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
+      }
+      res.json({ message: "Barcode deleted successfully" });
     }
-    res.json({ message: 'Barcode deleted successfully' });
-  });
+  );
 });
 
 // GET 載具資料
-app.get('/user/:userId/barcode', (req, res) => {
+app.get("/user/:userId/barcode", (req, res) => {
   const userId = req.params.userId;
-  conn.query('SELECT barcode FROM users WHERE user_id = ?', [userId], (error, results) => {
-    if (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
+  conn.query(
+    "SELECT barcode FROM users WHERE user_id = ?",
+    [userId],
+    (error, results) => {
+      if (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      const barcodeData = results[0];
+      res.json(barcodeData);
     }
-    if (results.length === 0) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-    const barcodeData = results[0];
-    res.json(barcodeData);
-  });
+  );
 });
 
 //購物車清單
@@ -1491,15 +1689,11 @@ app.patch("/user/:id", function (req, res) {
   );
 });
 
-//http://localhost:3000/cartPay/1/2
-//揪團
-app.post("/cartPay/:cartid/:uesrid", function (req, res) {
-  let cartid = req.params.cartid;
-  let userid = req.params.userid;
-  console.log(cartid, userid);
+//訂購系統介面加入購物車
+app.post("/cartorder", function (req, res) {
   let data = {
-    cart_id: req.params.cartid,
-    user_id: req.params.userid,
+    cart_id: req.body.cart_id,
+    user_id: req.body.user_id,
     user_name: req.body.user_name,
     brand_id: req.body.brand_id,
     branch_id: req.body.branch_id,
@@ -1514,12 +1708,10 @@ app.post("/cartPay/:cartid/:uesrid", function (req, res) {
     ingredient_price: req.body.ingredient_price,
     item_quantity: req.body.item_quantity,
     total_price: req.body.total_price,
-    updatetime: req.body.updatetime,
-    createtime: req.body.createtime,
+    updatetime: onTime(),
+    createtime: onTime(),
   };
-
   console.log(data);
-  //res.send(JSON.stringify(req.body));
   conn.query(
     "INSERT INTO cartdetails(cart_id, user_id, user_name, brand_id, branch_id, product_id, item_img, item_name, item_size, item_sugar, item_temperatures, item_price, item_ingredient, ingredient_price, item_quantity, total_price, updatetime, createtime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     [
@@ -1550,8 +1742,16 @@ app.post("/cartPay/:cartid/:uesrid", function (req, res) {
       }
     }
   );
+});
 
-  // "INSERT INTO order_details (orders_id, details_name, details_size, details_sugar, details_mperatures, details_ingredient, details_amount, details_quantity, details_total,updatetime, createtime) VALUES  ?",
-
-  res.end();
+//訂購系統揪團介面
+app.get("/order/:id/:cartid/:userid", function (req, res) {
+  // res.send('ok');
+  conn.query(
+    "SELECT * FROM branch WHERE branch_id=?",
+    [req.params.id],
+    function (err, rows) {
+      res.send(JSON.stringify(rows));
+    }
+  );
 });

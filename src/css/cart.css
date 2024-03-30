@@ -99,6 +99,7 @@ hr.hr-line {
 
 .mainproduct-img {
   max-width: 200px;
+  cursor: pointer;
 }
 
 .btn-join {

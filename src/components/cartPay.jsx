@@ -619,7 +619,6 @@ class cartPay extends Component {
       swal({
         title: "已無法再減少商品了",
         icon: "warning",
-        // buttons: true,
         dangerMode: true,
       });
       return;
@@ -628,30 +627,6 @@ class cartPay extends Component {
       .delete("http://localhost:8000/itemdelete/" + itemid)
       .then(async () => {
         this.refresh();
-        //撈取購物車
-        // let result = await axios.get(
-        //   `http://localhost:8000/cartPay/${this.props.match.params.id}`
-        // );
-        // newState.dbcarts = result.data;
-        // let quantity = 0; //飲料數量
-        // let sumPrice = 0; //加總價格
-        // console.log("dbcarts:", newState.dbcarts);
-        // if (newState.dbcarts[0].item_img === "無") {
-        //   newState.dbcarts[0].item_img = "LeDian_LOGO";
-        // }
-        // newState.dbcarts.forEach((item) => {
-        //   quantity += item.item_quantity;
-        //   sumPrice += item.total_price * item.item_quantity;
-        // });
-
-        // // console.log("sumPrice", sumPrice);
-        // newState.quantity = quantity;
-        // newState.sumPrice = sumPrice;
-        // newState.bagPrice = newState.bagQuantity * 2;
-        // newState.lastPrice =
-        //   sumPrice - newState.usePoninter + newState.bagPrice;
-        // // console.log(newState.dbcarts);
-        // this.setState(newState);
       });
   };
 
@@ -665,10 +640,6 @@ class cartPay extends Component {
     newState.dbcarts = result.data;
     let quantity = 0; //飲料數量
     let sumPrice = 0; //加總價格
-    console.log("dbcarts:", newState.dbcarts);
-    // if (newState.dbcarts[0].item_img === "無") {
-    //   newState.dbcarts[0].item_img = "LeDian_LOGO";
-    // }
     newState.dbcarts.forEach((item) => {
       quantity += item.item_quantity;
       sumPrice += item.total_price * item.item_quantity;
@@ -873,6 +844,9 @@ class cartPay extends Component {
                                 className="mainproduct-img"
                                 src={`/img/mainproduct/${this.state.dbcarts[0].brand_id}.png`}
                                 alt="mainproduct-img"
+                                onClick={() => {
+                                  window.location = `http://localhost:3000/order/${this.state.dbcarts[0].branch_id}/${this.props.match.params.id}/${this.state.user_id}`;
+                                }}
                               />
                             </div>
                             <div className="col-8 col-md-5">
@@ -927,7 +901,7 @@ class cartPay extends Component {
                                           className="text-des p-2 border-0 join-box-input"
                                           type="text"
                                           readOnly
-                                          value={`http://localhost:3000/cartPay/${this.props.match.params.id}/${this.state.user_id}`}
+                                          value={`http://localhost:3000/order/${this.state.dbcarts[0].branch_id}/${this.props.match.params.id}/${this.state.user_id}`}
                                         />
                                       </div>
                                       <div className="col-12 text-center my-3">
@@ -942,7 +916,7 @@ class cartPay extends Component {
                                         <div className="row">
                                           <div className="col-6 pe-0 d-flex justify-content-end">
                                             <QRCodeCanvas
-                                              value={`http://localhost:3000/cartPay/${this.props.match.params.id}/${this.state.user_id}`}
+                                              value={`http://localhost:3000/order/${this.state.dbcarts[0].branch_id}/${this.props.match.params.id}/${this.state.user_id}`}
                                             />
                                           </div>
                                           <div className="col-6 px-0">
@@ -1357,7 +1331,7 @@ class cartPay extends Component {
 
                                           {this.state.productEdit[8].cats_item
                                             .item_temperatures_range === 4 && (
-                                            <div className="col-4 form-check">
+                                            <div className="col-6 form-check">
                                               <input
                                                 className="form-check-input square text-des"
                                                 type="radio"
@@ -1378,7 +1352,7 @@ class cartPay extends Component {
 
                                           {this.state.productEdit[8].cats_item
                                             .item_temperatures_range === 5 && (
-                                            <div className="col-4 form-check">
+                                            <div className="col-6 form-check">
                                               <input
                                                 className="form-check-input square text-des"
                                                 type="radio"
@@ -1416,8 +1390,6 @@ class cartPay extends Component {
                                             </svg>
                                             甜度
                                           </div>
-                                          {/* <div className="col-4"></div>
-                                            <div className="col-4"></div> */}
                                         </div>
                                         <div className="row sugarinesscheck">
                                           {/* 甜度選項 */}
@@ -1466,7 +1438,7 @@ class cartPay extends Component {
 
                                           {this.state.productEdit[7].product
                                             .choose_sugar === 2 && (
-                                            <div className="col-md-4 col-6 form-check">
+                                            <div className="col-6 form-check">
                                               <input
                                                 className="form-check-input square text-des"
                                                 type="radio"
@@ -1486,7 +1458,7 @@ class cartPay extends Component {
                                           )}
                                           {this.state.productEdit[7].product
                                             .choose_sugar === 3 && (
-                                            <div className="col-md-4 col-6 form-check">
+                                            <div className="col-6 form-check">
                                               <input
                                                 className="form-check-input square text-des"
                                                 type="radio"
@@ -1636,8 +1608,6 @@ class cartPay extends Component {
                                                 }
                                               })}
 
-                                          {/* a.filter((item)=>  !item.includes('冰') ) */}
-
                                           {this.state.productEdit[7].product
                                             .choose_sugar === 7 &&
                                             this.state.productEdit[2].sugar_choose
@@ -1704,8 +1674,6 @@ class cartPay extends Component {
                                                 </svg>
                                                 配料
                                               </div>
-                                              {/* <div className="col-4"></div>
-                                            <div className="col-4"></div> */}
                                             </div>
 
                                             <div className="row sugarinesscheck">
@@ -1981,7 +1949,12 @@ class cartPay extends Component {
                           </div>
                           <div className="row mt-3">
                             <div className="col d-flex justify-content-between align-items-center">
-                              <a className="btn-return" href="./cart-list.html">
+                              <a
+                                className="btn-return"
+                                onClick={() => {
+                                  window.location = `http://localhost:3000/order/${this.state.dbcarts[0].branch_id}/${this.props.match.params.id}/${this.state.user_id}`;
+                                }}
+                              >
                                 繼續加購
                               </a>
                               <button
@@ -2508,9 +2481,6 @@ class cartPay extends Component {
     userdata = JSON.parse(userdata);
     let user_id = userdata.user_id;
     newState.user_id = user_id;
-    console.log(user_id);
-
-    // const userData = JSON.parse(localStorage.getItem("userdata"));
 
     if (userdata) {
       axios
@@ -2534,7 +2504,6 @@ class cartPay extends Component {
     newState.e_bill_text = newState.userinfo.barcode;
     newState.e_bill_isChecked = newState.userinfo.barcode ? true : false;
     newState.remainingPoints = newState.userinfo.points;
-    console.log(newState.userinfo);
 
     //撈取購物車
     let result = await axios.get(
@@ -2543,10 +2512,6 @@ class cartPay extends Component {
     newState.dbcarts = result.data;
     let quantity = 0; //飲料數量
     let sumPrice = 0; //加總價格
-    console.log("dbcarts:", newState.dbcarts);
-    // if (newState.dbcarts[0].item_img === "無") {
-    //   newState.dbcarts[0].item_img = "LeDian_LOGO";
-    // }
     newState.dbcarts.forEach((item) => {
       quantity += item.item_quantity;
       sumPrice += item.total_price * item.item_quantity;
@@ -2556,7 +2521,6 @@ class cartPay extends Component {
     newState.bagPrice = newState.bagQuantity * 2;
     newState.lastPrice = sumPrice - newState.usePoninter + newState.bagPrice;
     this.setState(newState);
-    console.log("dbcarts", this.state.dbcarts);
   };
 }
 export default cartPay;

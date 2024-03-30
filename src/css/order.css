@@ -46,11 +46,40 @@
     color: #333;
 }
 
+.col-7.buy {
+    background-color: #ededed;
+    border-radius: 40px;
+    display: flex;
+    justify-content: center; 
+    align-items: flex-start;
+    height: 60px;
+    border: 1px solid #003C95;
+}
+
+.buytext {
+    display: flex;
+    justify-content: center; 
+    color: #003C95;
+}
+
 .text-title-b {
     font-size: 22px;
     font-weight: 600;
     color: #333;
 }
+
+.buy:hover .joinjoin {
+    color:#F2AF21; /* 或者你想要的其他顏色 */
+}
+
+.buy:hover .buytext {
+    color: #F2AF21; /* 或者你想要的其他顏色 */
+}
+
+.col-7.buy:hover {
+    border-color: #F2AF21; /* 或者你想要的其他顏色 */
+}
+
 
 /* .btn-join {
     background-color: #003c95;
@@ -97,8 +126,8 @@
 }
 
 .buyjoin {
-    width: 60px;
-    border-radius: 100px;
+    width: 50px;
+    padding-top: 5px;
 }
 
 
@@ -106,12 +135,14 @@
 
 .storeTitle {
     color: #383838;
-    font-family: "jf-openhuninn-2.0";
+    font-family: "FakePearl-SemiBold";
+    margin-bottom: 13px;
 }
 
 .storeContent {
     color: #383838;
     font-family: "jf-openhuninn-2.0";
+    font-size: 14pt;
 }
 
 .buyText {
@@ -143,12 +174,12 @@
 
 
 /* 電腦商店資訊 */
-@media (min-width: 991px) {
+@media (min-width: 1731px) {
     .col-3.storeBox {
         position: absolute;
-        top: 148px;
+        top: 165px;
         left: 115px;
-        width: 350px;
+        /* width: 350px; */
         height: 250px;
         z-index: 50;
         background-color: rgba(232, 232, 232, 0.6);
@@ -161,10 +192,10 @@
 }
 
 /* 手機商店資訊 */
-@media (max-width: 992px) {
+@media (max-width: 1730px) {
     .col-3.storeBox {
         /* position: absolute; */
-        width: 410px;
+        width: 100%;
         height: 80px;
         z-index: 50;
         background-color: rgba(232, 232, 232, 0.6);
@@ -178,8 +209,9 @@
 }
 
 .title1 {
-    font-family: "FakePearl-SemiBold";
+    font-family: "FakePearl-Medium";
     margin-top: 30px;
+    font-weight: 500;
 }
 
 .boxMenu {
@@ -287,8 +319,8 @@
 }
 
 .buttonTitle {
-    font-family: "jf-openhuninn-2.0";
-    font-size: 15pt;
+    font-family: "FakePearl-SemiBold";
+    font-size: 18pt;
     white-space: nowrap;
     text-align: left;
     /* margin-left: 10px; */
@@ -308,7 +340,7 @@
 }
 
 .buttonPrics {
-    font-family: "jf-openhuninn-2.0";
+    font-family: "FakePearl-SemiBold";
     font-size: 14pt;
 }
 
@@ -355,14 +387,12 @@
     /* padding-left: 30px; */
 }
 
-/* .modal-content {
+.modal-content.join {
     border-color: #F2AF21 !important;
     border-width: 8px !important;
-} */
-
-/* .modal-content {
     border-radius: 36px !important;
-} */
+}
+
 
 .row.sizetitle {
     flex: auto;
@@ -431,6 +461,20 @@ svg {
 .row.footer {
     margin-top: 30px;
 }
+
+/* 對話盒照片 */
+.menuproductImg {
+    width: 150%;
+    margin-left: -33px;
+    /* padding-right:10px;
+    padding-right: 0px; */
+} 
+
+/* .col-12.menuproductImg {
+    width: 300px;
+    overflow: hidden;
+} */
+
 
 /* 核取方塊間距調整 */
 .row.sizetitle {
@@ -519,4 +563,10 @@ svg {
 
 .position-fixed.bottom-0.end-0.p-3 {
     z-index: 5;
+}
+
+/* checkbox */
+.form-check-input.order:checked {
+    background-color:#F2AF21 !important;
+    border-color:#F2AF21 !important;
 }
