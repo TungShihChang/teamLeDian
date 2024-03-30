@@ -313,7 +313,7 @@ class cartPay extends Component {
 
     //datails整理
     let serverData = {
-      user_id: 1,
+      user_id: this.state.user_id,
       brand_id: this.state.dbcarts[0].brand_id,
       brand_name: this.state.dbcarts[0].brand_name,
       branch_name: this.state.dbcarts[0].branch_name,
