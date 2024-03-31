@@ -8,16 +8,29 @@ import { PiMedal } from "react-icons/pi";
 import { PiCoins } from "react-icons/pi";
 import { GiCancel } from "react-icons/gi";
 import axios from "axios";
+import swal from "sweetalert";
 class cartList extends Component {
   state = { dbData: [{ brand_id: "1" }] };
 
+  //刪除購物車
   delete_btn = async (id, i, e) => {
     e.preventDefault();
-    let newState = { ...this.state };
-    console.log(newState.dbData.splice(i, 1));
-    this.setState(newState);
-    let url = "http://localhost:8000/cartdelete/" + id;
-    await axios.delete(url);
+    const result = await swal({
+      title: "確定刪除購物車?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    });
+    if (result) {
+      console.log("hi");
+      let newState = { ...this.state };
+      console.log(newState.dbData.splice(i, 1));
+      this.setState(newState);
+      let url = "http://localhost:8000/cartdelete/" + id;
+      await axios.delete(url);
+    } else {
+      return;
+    }
   };
 
   render() {
