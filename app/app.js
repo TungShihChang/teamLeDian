@@ -45,7 +45,7 @@ app.get("/index/brand", function (req, res) {
 });
 app.get("/index/products", function (req, res) {
   conn.query(
-    "select product_name, product_img, brand_id, product_id from products where product_img != '無' and product_class_1 = 1",
+    "select product_name, product_img, brand_id, product_id from products where product_img != 'LeDian' and product_class_1 = 1",
     function (err, rows) {
       res.send(JSON.stringify(rows));
     }
