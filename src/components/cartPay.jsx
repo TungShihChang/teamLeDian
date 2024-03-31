@@ -623,11 +623,22 @@ class cartPay extends Component {
       });
       return;
     }
-    await axios
-      .delete("http://localhost:8000/itemdelete/" + itemid)
-      .then(async () => {
-        this.refresh();
-      });
+
+    const result = await swal({
+      title: "確定刪除商品?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    });
+    if (result) {
+      await axios
+        .delete("http://localhost:8000/itemdelete/" + itemid)
+        .then(async () => {
+          this.refresh();
+        });
+    } else {
+      return;
+    }
   };
 
   //重新刷新
