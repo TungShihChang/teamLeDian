@@ -8,9 +8,9 @@ import { PiMedal } from "react-icons/pi";
 import { PiCoins } from "react-icons/pi";
 import { GiCancel } from "react-icons/gi";
 import { Helmet } from "react-helmet";
-import { Modal } from 'bootstrap';
+import { Modal } from "bootstrap";
 import Axios from "axios";
-import { Toast } from 'react-bootstrap';
+import { Toast } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -46,7 +46,7 @@ class Profile extends Component {
       selectedOrderDetails: null,
       userImg: null,
       showToast: false,
-      toastMessage: '',
+      toastMessage: "",
     };
   }
 
@@ -57,7 +57,9 @@ class Profile extends Component {
     if (userData) {
       Axios.get(`http://localhost:8000/user/${userData.user_id}`)
         .then((response) => {
-          const userImg = response.data.user_img ? response.data.user_img : "LeDian.png";
+          const userImg = response.data.user_img
+            ? response.data.user_img
+            : "LeDian.png";
           this.setState({ userImg, userData });
         })
         .catch((error) => {
@@ -77,6 +79,8 @@ class Profile extends Component {
             userData: response.data,
             h5Name: response.data.name,
             loading: false,
+            selectedGender: response.data.sex,
+            selectedDate: response.data.birthday,
           });
 
           Axios.get(`http://localhost:8000/profile/orders/${userData.user_id}`)
@@ -143,7 +147,7 @@ class Profile extends Component {
       clearTimeout(this.toastTimer);
     }
   };
-  
+
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleWindowResize);
   }
@@ -161,7 +165,7 @@ class Profile extends Component {
     event.preventDefault();
     const { selectedFile, userData } = this.state;
     const form = event.currentTarget;
-  
+
     if (!form.checkValidity()) {
       event.stopPropagation();
       this.setState({ form1Validated: true });
@@ -215,26 +219,26 @@ class Profile extends Component {
 
   handleForm2Submit = (event) => {
     event.preventDefault();
-  
+
     const form = event.currentTarget;
-  
+
     if (!form.checkValidity()) {
       event.stopPropagation();
       this.setState({ form2Validated: true });
       return;
     }
-  
+
     const { userData } = this.state;
     const userId = userData.user_id;
     const oldPassword = form.elements.inputOldPassword.value;
     const newPassword = form.elements.inputNewPassword.value;
     const newPassword2 = form.elements.inputNewPassword2.value;
-  
+
     if (newPassword !== newPassword2) {
       this.toggleToast("新密碼和再次輸入新密碼不匹配，請重新輸入。");
       return;
     }
-  
+
     Axios.post("http://localhost:8000/verifyPassword", { userId, oldPassword })
       .then((response) => {
         Axios.post("http://localhost:8000/changePassword", {
@@ -254,7 +258,6 @@ class Profile extends Component {
         this.toggleToast("舊密碼驗證失敗。");
       });
   };
-  
 
   handleStarClick = (value) => {
     this.setState({ rating: value });
@@ -278,7 +281,7 @@ class Profile extends Component {
       .then((response) => {
         this.setState((prevState) => ({
           region: response.data,
-          selectedCity: selectedCityId, 
+          selectedCity: selectedCityId,
           userData: {
             ...prevState.userData,
             city_id: selectedCityId,
@@ -308,10 +311,10 @@ class Profile extends Component {
       .split("T")[0];
     console.log(formattedDate);
     this.setState((prevState) => ({
-      selectedDate: date, 
+      selectedDate: date,
       userData: {
         ...prevState.userData,
-        birthday: formattedDate, 
+        birthday: formattedDate,
       },
     }));
   };
@@ -350,12 +353,12 @@ class Profile extends Component {
   };
 
   handleModalClose = () => {
-    const myModalElement = document.getElementById('Orders_staticBackdrop');
+    const myModalElement = document.getElementById("Orders_staticBackdrop");
     const myModal = Modal.getInstance(myModalElement);
-  
+
     if (myModal) {
       myModal.hide();
-      myModalElement.setAttribute('data-bs-backdrop', 'true');
+      myModalElement.setAttribute("data-bs-backdrop", "true");
     } else {
     }
   };
@@ -384,16 +387,18 @@ class Profile extends Component {
           });
         })
         .catch((error) => {
-          console.error('Error fetching orders data:', error);
+          console.error("Error fetching orders data:", error);
         });
     }
   }
   updateUserPoints = () => {
     const userData = JSON.parse(localStorage.getItem("userdata"));
-    const userId = userData.user_id; 
+    const userId = userData.user_id;
     const pointsToAdd = Math.floor(this.state.selectedOrder.orders_total / 20);
-  
-    Axios.post(`http://localhost:8000/updateUserPoints/${userId}`, { pointsToAdd: pointsToAdd })
+
+    Axios.post(`http://localhost:8000/updateUserPoints/${userId}`, {
+      pointsToAdd: pointsToAdd,
+    })
       .then((response) => {
         const updatedPointsToAdd = response.data;
         console.log("Updated pointsToAdd:", updatedPointsToAdd);
@@ -402,7 +407,6 @@ class Profile extends Component {
         console.error("Error:", error);
       });
   };
-  
 
   render() {
     const {
@@ -422,76 +426,162 @@ class Profile extends Component {
           <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         </Helmet>
         <div id="profileheader">
-        <div id='header'
-                style={{
-                    boxShadow: '1px 3px 10px #cccccc',
-                    marginBottom: '4px',
-                }} 
-                className='d-flex justify-content-between'>
-                <div className='col-7 col-sm-7 col-md-6 col-xl-5 d-flex ms-2 justify-content-between align-items-center'>
-                <div id='menu' className='col-8'><h2 className='btn text-start  my-auto fs-4' onClick={this.toggleMenuNav}>☰</h2></div>
-                    <h4 id='homeBtn' className='my-auto btn' onClick={()=>{window.location="/index"}}><img id='logo' src='/img/index/LeDian_LOGO-05.png' alt='logo'></img></h4>
-                    <h4 className='my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center' onClick={this.cartMenuClick}><HiOutlineShoppingBag className='fs-4'/>購物車</h4>
-                    <h4 className='my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center' onClick={()=>{window.location="/brand"}}><PiMedal className='fs-4'/>品牌專區</h4>
-                    <h4 className='my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center' onClick={this.pointinfoShow}><PiCoins className='fs-4'/>集點資訊</h4>
-                </div>
-                <div id="pointinfo">
-                    <button  id="pointinfoclose" onClick={this.pointinfoHide}><GiCancel   className='fs-2 text-light' /></button>
-                    <h1>集點資訊</h1>
-                    <p>．每消費20元即可累積1點。</p>
-                    <p>．每點可折抵1元消費金額。</p>
-                    <p>．點數可在下次消費時折抵使用。</p>
-                    <p>．點數不可轉讓，不可兌換現金，不可合併使用。</p>
-                    <p>．本集點活動以公告為準，如有更改，恕不另行通知。</p>
-                </div>
-
-
-                <div className='d-flex me-2 align-items-center'>
-                    {this.state.userData ? (
-                    <h4
-                        id="loginBtn"
-                        className="my-auto btn headerText text-nowrap"
-                        onClick={this.toggleMemberNav}
-                    >
-                        <img
-                        id="memberHeadshot"
-                        src={`/img/users/${this.state.userImg}`}
-                        alt="memberHeadshot"
-                        className="img-fluid my-auto mx-1 rounded-circle border"
-                        />
-                        會員專區▼
-                    </h4>
-                    ) : (
-                    <h4
-                        id="loginBtn"
-                        className="my-auto btn headerText align-self-center"
-                        onClick={this.toggleMemberNav}
-                    >
-                        登入/註冊
-                    </h4>
-                    )}
-                                
-                    <div id='memberNav' className='collapse'>
-                        <div className='p-2'>
-                            <h4 className='headerText text-center my-2' onClick={()=>{window.location="/profile"}}>會員中心</h4><hr />
-                            <h4 className='headerText text-center my-2' onClick={this.logoutClick}>登出</h4>
-                        </div>
-                    </div>
-                </div>
+          <div
+            id="header"
+            style={{
+              boxShadow: "1px 3px 10px #cccccc",
+              marginBottom: "4px",
+            }}
+            className="d-flex justify-content-between"
+          >
+            <div className="col-7 col-sm-7 col-md-6 col-xl-5 d-flex ms-2 justify-content-between align-items-center">
+              <div id="menu" className="col-8">
+                <h2
+                  className="btn text-start  my-auto fs-4"
+                  onClick={this.toggleMenuNav}
+                >
+                  ☰
+                </h2>
+              </div>
+              <h4
+                id="homeBtn"
+                className="my-auto btn"
+                onClick={() => {
+                  window.location = "/index";
+                }}
+              >
+                <img
+                  id="logo"
+                  src="/img/index/LeDian_LOGO-05.png"
+                  alt="logo"
+                ></img>
+              </h4>
+              <h4
+                className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center"
+                onClick={this.cartMenuClick}
+              >
+                <HiOutlineShoppingBag className="fs-4" />
+                購物車
+              </h4>
+              <h4
+                className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center"
+                onClick={() => {
+                  window.location = "/brand";
+                }}
+              >
+                <PiMedal className="fs-4" />
+                品牌專區
+              </h4>
+              <h4
+                className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center"
+                onClick={this.pointinfoShow}
+              >
+                <PiCoins className="fs-4" />
+                集點資訊
+              </h4>
             </div>
-            <div id='menuNav' className='menuNav d-flex flex-column align-items-center'>
-                <h4 className='menuText my-3 mainColor border-bottom border-secondary' onClick={this.cartMenuClick}><HiOutlineShoppingBag className='fs-4'/>購物車</h4>
-                <h4 className='menuText my-3 mainColor border-bottom border-secondary' onClick={()=>{window.location="/brand"}}><PiMedal className='fs-4'/>品牌專區</h4>
-                <h4 className='menuText my-3 mainColor border-bottom border-secondary' onClick={this.pointinfoShow}><PiCoins className='fs-4'/>集點資訊</h4>
+            <div id="pointinfo">
+              <button id="pointinfoclose" onClick={this.pointinfoHide}>
+                <GiCancel className="fs-2 text-light" />
+              </button>
+              <h1>集點資訊</h1>
+              <p>．每消費20元即可累積1點。</p>
+              <p>．每點可折抵1元消費金額。</p>
+              <p>．點數可在下次消費時折抵使用。</p>
+              <p>．點數不可轉讓，不可兌換現金，不可合併使用。</p>
+              <p>．本集點活動以公告為準，如有更改，恕不另行通知。</p>
             </div>
 
+            <div className="d-flex me-2 align-items-center">
+              {this.state.userData ? (
+                <h4
+                  id="loginBtn"
+                  className="my-auto btn headerText text-nowrap"
+                  onClick={this.toggleMemberNav}
+                >
+                  <img
+                    id="memberHeadshot"
+                    src={`/img/users/${this.state.userImg}`}
+                    alt="memberHeadshot"
+                    className="img-fluid my-auto mx-1 rounded-circle border"
+                  />
+                  會員專區▼
+                </h4>
+              ) : (
+                <h4
+                  id="loginBtn"
+                  className="my-auto btn headerText align-self-center"
+                  onClick={this.toggleMemberNav}
+                >
+                  登入/註冊
+                </h4>
+              )}
+
+              <div id="memberNav" className="collapse">
+                <div className="p-2">
+                  <h4
+                    className="headerText text-center my-2"
+                    onClick={() => {
+                      window.location = "/profile";
+                    }}
+                  >
+                    會員中心
+                  </h4>
+                  <hr />
+                  <h4
+                    className="headerText text-center my-2"
+                    onClick={this.logoutClick}
+                  >
+                    登出
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            id="menuNav"
+            className="menuNav d-flex flex-column align-items-center"
+          >
+            <h4
+              className="menuText my-3 mainColor border-bottom border-secondary"
+              onClick={this.cartMenuClick}
+            >
+              <HiOutlineShoppingBag className="fs-4" />
+              購物車
+            </h4>
+            <h4
+              className="menuText my-3 mainColor border-bottom border-secondary"
+              onClick={() => {
+                window.location = "/brand";
+              }}
+            >
+              <PiMedal className="fs-4" />
+              品牌專區
+            </h4>
+            <h4
+              className="menuText my-3 mainColor border-bottom border-secondary"
+              onClick={this.pointinfoShow}
+            >
+              <PiCoins className="fs-4" />
+              集點資訊
+            </h4>
+          </div>
         </div>
-        <Toast show={this.state.showToast} onClose={this.toggleToast} className="custom-toast position-fixed  p-3">
-        <div class="d-flex">
-          <Toast.Body>{this.state.toastMessage}</Toast.Body>
-          <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-      </Toast>
+        <Toast
+          show={this.state.showToast}
+          onClose={this.toggleToast}
+          className="custom-toast position-fixed  p-3"
+        >
+          <div class="d-flex">
+            <Toast.Body>{this.state.toastMessage}</Toast.Body>
+            <button
+              type="button"
+              class="btn-close me-2 m-auto"
+              data-bs-dismiss="toast"
+              aria-label="Close"
+            ></button>
+          </div>
+        </Toast>
         <div
           className="modal fade"
           id="Orders_staticBackdrop"
@@ -513,19 +603,19 @@ class Profile extends Component {
                         LeDian
                       </h1>
                     </div>
-                    <div className = "fs-5">
-                    {this.state.selectedOrder && (
-                      <div className="col-12 mb-3">
-                        <span>以下是您在</span>
+                    <div className="fs-5">
+                      {this.state.selectedOrder && (
                         <div className="col-12 mb-3">
-                        <span className="ma-1">
-                          {this.state.selectedOrder.brand_name}
-                        </span>
-                        <span>{this.state.selectedOrder.branch_name}</span>
-                        <span>訂購的電子明細。</span>
-                      </div>
-                      </div>
-                    )}
+                          <span>以下是您在</span>
+                          <div className="col-12 mb-3">
+                            <span className="ma-1">
+                              {this.state.selectedOrder.brand_name}
+                            </span>
+                            <span>{this.state.selectedOrder.branch_name}</span>
+                            <span>訂購的電子明細。</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="col-3 text-end ps-0">
@@ -627,7 +717,10 @@ class Profile extends Component {
                   {this.state.selectedOrderDetails && (
                     <>
                       {this.state.selectedOrderDetails.map((detail, index) => (
-                        <div key={`detail_${index}`} className="rounded-1 detailsbuttom my-2">
+                        <div
+                          key={`detail_${index}`}
+                          className="rounded-1 detailsbuttom my-2"
+                        >
                           <div className="col-12 mb-1 fs-5 fw-bold mt-3">
                             {detail.details_name}
                           </div>
@@ -645,49 +738,66 @@ class Profile extends Component {
                     </>
                   )}
 
-                    {this.state.selectedOrder && this.state.selectedOrder.orders_bag === 1 && (
-                       <div key="bag" className="rounded-1 detailsbuttom fs-5">
+                  {this.state.selectedOrder &&
+                    this.state.selectedOrder.orders_bag === 1 && (
+                      <div key="bag" className="rounded-1 detailsbuttom fs-5">
                         <div className="col-12 mb-1 fw-bold mt-3">塑膠袋</div>
                         <div className="col-12 mb-3">
                           <span>$2/</span>
-                          <span>{this.state.selectedOrder.orders_bag_num}份</span>
+                          <span>
+                            {this.state.selectedOrder.orders_bag_num}份
+                          </span>
                         </div>
                       </div>
                     )}
 
-
-                    {this.state.selectedOrderDetails && (
-                      <>
-                        {this.state.selectedOrderDetails.map((detail, index) => {
-                          totalQuantity += detail.details_quantity; 
-                        })}
-                        <div className="mt-4"></div>
-                        <div className="col-3 fs-5">
-                          <span>商品</span>
-                        </div>
-                        <div className="col-4 text-start fs-5">X{totalQuantity}</div>
-                        <div className="col-5 text-end fs-5">${this.state.selectedOrderDetails.reduce((totalPrice, detail) => totalPrice + detail.details_total, 0)}</div>
-                      </>
-                    )}
-
-                     
-                     {this.state.selectedOrder && (
+                  {this.state.selectedOrderDetails && (
                     <>
-                     {this.state.selectedOrder && this.state.selectedOrder.orders_bag === 1 && (
-                      <>
+                      {this.state.selectedOrderDetails.map((detail, index) => {
+                        totalQuantity += detail.details_quantity;
+                      })}
+                      <div className="mt-4"></div>
                       <div className="col-3 fs-5">
-                        <span>塑膠袋</span>
+                        <span>商品</span>
                       </div>
-                      <div className="col-4 text-start fs-5">X{this.state.selectedOrder.orders_bag_num}</div>
-                      <div className="col-5 text-end fs-5">${this.state.selectedOrder.orders_bag_num * 2}</div>
-                      </>
-                     )}
+                      <div className="col-4 text-start fs-5">
+                        X{totalQuantity}
+                      </div>
+                      <div className="col-5 text-end fs-5">
+                        $
+                        {this.state.selectedOrderDetails.reduce(
+                          (totalPrice, detail) =>
+                            totalPrice + detail.details_total,
+                          0
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {this.state.selectedOrder && (
+                    <>
+                      {this.state.selectedOrder &&
+                        this.state.selectedOrder.orders_bag === 1 && (
+                          <>
+                            <div className="col-3 fs-5">
+                              <span>塑膠袋</span>
+                            </div>
+                            <div className="col-4 text-start fs-5">
+                              X{this.state.selectedOrder.orders_bag_num}
+                            </div>
+                            <div className="col-5 text-end fs-5">
+                              ${this.state.selectedOrder.orders_bag_num * 2}
+                            </div>
+                          </>
+                        )}
                       {this.state.selectedOrder.usePoninter !== 0 && (
                         <>
                           <div className="col-3 text-danger fs-5">
                             <span>點數折扣</span>
                           </div>
-                          <div className="col-9 text-end text-danger fs-5">-${this.state.selectedOrder.usePoninter}</div>
+                          <div className="col-9 text-end text-danger fs-5">
+                            -${this.state.selectedOrder.usePoninter}
+                          </div>
                         </>
                       )}
 
@@ -696,10 +806,11 @@ class Profile extends Component {
                       <div className="col-3 fs-5">
                         <span>總計</span>
                       </div>
-                      <div className="col-9 text-end mb-4 fs-5">${this.state.selectedOrder.orders_total}</div>
-                      </>
-                     )}
-                  
+                      <div className="col-9 text-end mb-4 fs-5">
+                        ${this.state.selectedOrder.orders_total}
+                      </div>
+                    </>
+                  )}
 
                   <div className="col-12 mt-4 fs-5 mb-2">
                     <h3 className="fw-bold">評價此次訂單</h3>
@@ -734,17 +845,15 @@ class Profile extends Component {
               </div>
               {/* <!-- body end --> */}
               <div className="modal-footer">
-              
                 <button
-                    type="button"
-                    className="btnmodal fs-4"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    onClick={this.handleModalClose}
-                  >
+                  type="button"
+                  className="btnmodal fs-4"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                  onClick={this.handleModalClose}
+                >
                   送出評價
                 </button>
-              
               </div>
             </div>
           </div>
@@ -775,7 +884,7 @@ class Profile extends Component {
                             alt=" "
                           />
                           <h6 className="mb-0 mx-2 userpoint fs-5">
-                          {this.state.userData.points}
+                            {this.state.userData.points}
                           </h6>
                         </span>
                       </div>
@@ -947,12 +1056,17 @@ class Profile extends Component {
                                   className="img-fluid mb-1"
                                   alt="Upload Icon"
                                 />
-                                <p className="fs-5" id="uploadtext">上傳頭像</p>
+                                <p className="fs-5" id="uploadtext">
+                                  上傳頭像
+                                </p>
                               </div>
                             </label>
                           </div>
                           <div className="col-12 mb-3">
-                            <label htmlFor="userName" className="form-label fs-5">
+                            <label
+                              htmlFor="userName"
+                              className="form-label fs-5"
+                            >
                               姓名
                             </label>
                             <input
@@ -982,7 +1096,10 @@ class Profile extends Component {
                             <div className="invalid-feedback">不能為空</div>
                           </div>
                           <div className="col-12 mb-3">
-                            <label for="userPhoneId" className="form-label fs-5">
+                            <label
+                              for="userPhoneId"
+                              className="form-label fs-5"
+                            >
                               <span className="text-danger">*</span>手機號碼
                             </label>
                             <input
@@ -1090,7 +1207,7 @@ class Profile extends Component {
                               className="form-select fs-5"
                               aria-label="Default select example"
                               value={this.state.userData.city_id || ""}
-                              onChange={this.handleCityChange} 
+                              onChange={this.handleCityChange}
                             >
                               <option value="">選擇城市</option>
                               {city &&
@@ -1109,7 +1226,7 @@ class Profile extends Component {
                               className="form-select fs-5"
                               aria-label="Default select example"
                               value={this.state.userData.area_id || ""}
-                              onChange={this.handleRegionChange} 
+                              onChange={this.handleRegionChange}
                             >
                               <option value="">選擇地區</option>
                               {region &&
@@ -1148,7 +1265,10 @@ class Profile extends Component {
                           noValidate
                         >
                           <div className="col-12 mb-4">
-                            <label for="inputPassword" className="form-label fs-5">
+                            <label
+                              for="inputPassword"
+                              className="form-label fs-5"
+                            >
                               <span className="text-danger">*</span>舊密碼
                             </label>
                             <input
@@ -1216,7 +1336,9 @@ class Profile extends Component {
                         {ordersData.map((order, index) => (
                           <div key={order.orderId} className="col">
                             <div className="card h-100 text-center">
-                              <div className="card-header fw-bold fs-5">完成</div>
+                              <div className="card-header fw-bold fs-5">
+                                完成
+                              </div>
                               <div className="text-center mt-3">
                                 <img
                                   src={`/img/logo/${order.brand_id}.png`}
@@ -1269,8 +1391,6 @@ class Profile extends Component {
                         </div>
                       </div>
                     </div>
-
-
                   </div>
                 </div>
               </div>
@@ -1349,52 +1469,51 @@ class Profile extends Component {
   }
   pointinfoShow = (event) => {
     document.getElementById("pointinfo").style.top = event.clientY + 50 + "px";
-    document.getElementById("pointinfo").style.left = event.clientX - 150 + "px";
-} 
+    document.getElementById("pointinfo").style.left =
+      event.clientX - 150 + "px";
+  };
 
-pointinfoHide = (event) => {
+  pointinfoHide = (event) => {
     document.getElementById("pointinfo").style.top = "-500px";
     event.cancelBubble = true;
-}
+  };
 
-toggleMemberNav = () => {
-    const userdata = localStorage.getItem('userdata');
-    if(userdata){
-        document.getElementById('memberNav').classList.toggle('collapse');
-    }else{
-        const path = this.props.location.pathname;
-        sessionStorage.setItem('redirect',path) ;
-        window.location = "/login";
+  toggleMemberNav = () => {
+    const userdata = localStorage.getItem("userdata");
+    if (userdata) {
+      document.getElementById("memberNav").classList.toggle("collapse");
+    } else {
+      const path = this.props.location.pathname;
+      sessionStorage.setItem("redirect", path);
+      window.location = "/login";
     }
-  }
-toggleMenuNav = () => {
-    document.getElementById('menuNav').classList.toggle('menuNav');
-}
-logoutClick = async () => {
+  };
+  toggleMenuNav = () => {
+    document.getElementById("menuNav").classList.toggle("menuNav");
+  };
+  logoutClick = async () => {
     localStorage.removeItem("userdata");
     const userdata = localStorage.getItem("userdata");
     console.log("現在的:", userdata);
     try {
-        await Axios.post('http://localhost:8000/logout');
+      await Axios.post("http://localhost:8000/logout");
     } catch (error) {
-        console.error("登出時出錯:", error);
+      console.error("登出時出錯:", error);
     }
-    
-    document.getElementById('memberNav').classList.add('collapse');
-    this.setState({})
-    window.location = "/index"
-}
-cartMenuClick = () => {
-    const userData = JSON.parse(localStorage.getItem('userdata'));
-    if(userData){
-        const userId = userData.user_id;
-        window.location = `/cartlist/${userId}`;
-    }else {
-        window.location = "/login";
-    }              
 
-}
-
+    document.getElementById("memberNav").classList.add("collapse");
+    this.setState({});
+    window.location = "/index";
+  };
+  cartMenuClick = () => {
+    const userData = JSON.parse(localStorage.getItem("userdata"));
+    if (userData) {
+      const userId = userData.user_id;
+      window.location = `/cartlist/${userId}`;
+    } else {
+      window.location = "/login";
+    }
+  };
 }
 
 export default Profile;

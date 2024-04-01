@@ -196,7 +196,7 @@ class cartPay extends Component {
   };
   name_check = () => {
     let newState = { ...this.state };
-    let rules = new RegExp(/^[^\d_\W]+$/);
+    let rules = new RegExp(/^[\u4e00-\u9fa5a-zA-Z]+$/);
 
     newState.userinfo.name = rules.test(newState.userinfo.name)
       ? newState.userinfo.name
@@ -235,7 +235,7 @@ class cartPay extends Component {
   };
 
   name_phone_check = () => {
-    if (this.state.userinfo.name === "" || this.state.userinfo.name === "") {
+    if (this.state.userinfo.name === "" || this.state.userinfo.phone === "") {
       swal({
         title: "請將取貨人資訊填寫完整",
         icon: "warning",
