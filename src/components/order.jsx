@@ -1037,7 +1037,10 @@ class order extends Component {
                 alt="logo"
               ></img>
             </h4>
-            <h4 className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center">
+            <h4
+              className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center"
+              onClick={this.cartMenuClick}
+            >
               <HiOutlineShoppingBag className="fs-4" />
               購物車
             </h4>
@@ -1120,7 +1123,10 @@ class order extends Component {
           id="menuNav"
           className="menuNav d-flex flex-column align-items-center"
         >
-          <h4 className="menuText my-3 mainColor border-bottom border-secondary">
+          <h4
+            className="menuText my-3 mainColor border-bottom border-secondary"
+            onClick={this.cartMenuClick}
+          >
             <HiOutlineShoppingBag className="fs-4" />
             購物車
           </h4>
