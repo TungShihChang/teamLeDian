@@ -45,8 +45,11 @@ app.get("/index/brand", function (req, res) {
 });
 app.get("/index/products", function (req, res) {
   conn.query(
-    "select product_name, product_img, brand_id, product_id from products where product_img != 'LeDian' and product_class_1 = 1",
+    "select product_name, product_img, brand_id, product_id, product_class_1 from products where product_img != 'LeDian' and product_class_1 = 1 and (brand_id = 14 or brand_id = 10 or brand_id = 1 or brand_id = 9)",
     function (err, rows) {
+      if (err) {
+        console.log(err);
+      }
       res.send(JSON.stringify(rows));
     }
   );

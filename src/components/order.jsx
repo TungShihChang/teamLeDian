@@ -10,6 +10,7 @@ import { PiCoins } from "react-icons/pi";
 import { GiCancel } from "react-icons/gi";
 import { QRCodeCanvas } from "qrcode.react";
 import { Newspaper } from "react-bootstrap-icons";
+import Toast from "react-bootstrap/Toast";
 
 class order extends Component {
   constructor(props) {
@@ -44,6 +45,7 @@ class order extends Component {
         temperatures: "",
         sugar: "",
       },
+      showToast: false, // 初始状态为不显示Toast
     };
   }
 
@@ -152,6 +154,16 @@ class order extends Component {
   // getProductInfo = () => {
 
   // }
+
+  // 点击按钮时显示Toast消息
+  handleShowToast = () => {
+    this.setState({ showToast: true });
+
+    // 3 秒后隐藏Toast消息
+    setTimeout(() => {
+      this.setState({ showToast: false });
+    }, 3000);
+  };
 
   // 顯示溫度 // 判斷所選的溫度會跳出來的尺寸
   showTemp = (temp) => {
@@ -786,6 +798,21 @@ class order extends Component {
       });
     }
   };
+  //清除加入購物車內容
+  handleCartOkClick = (event) => {
+    var formCheckInput = document.getElementsByClassName("form-check-input");
+    for (var i = 0; i < formCheckInput.length; i++) {
+      if (formCheckInput[i].checked) {
+        formCheckInput[i].checked = false;
+      }
+    }
+    this.setState({
+      selectsize: 0,
+      selectedPrice: 0, // 清除金額
+      totalPrice: 0,
+      item_quantity: 1,
+    });
+  };
 
   // 加入購物車
   cartpay = async (e) => {
@@ -1328,7 +1355,7 @@ class order extends Component {
 
         {/* 對話盒Modal */}
         <div
-          className="modal fade"
+          className="modal fade "
           id="exampleModal"
           onClick={this.handleClick}
           tabIndex="-1"
@@ -2137,9 +2164,14 @@ class order extends Component {
                   </div>
                   <div className="d-grid gap-2 col-8 mx-auto">
                     <button
-                      className="btn btn-outline-warning"
+                      className="btn btn-outline-warning btn-primary cartpay"
                       type="button"
-                      onClick={this.cartpay}
+                      data-bs-dismiss="modal"
+                      onClick={() => {
+                        this.handleShowToast();
+                        this.cartpay();
+                        this.handleCartOkClick();
+                      }}
                     >
                       加入購物車
                     </button>
@@ -2150,6 +2182,34 @@ class order extends Component {
           </div>
         </div>
 
+        <div>
+          <Toast
+            show={this.state.showToast}
+            className="order-toast"
+            onClose={() => this.setState({ showToast: false })}
+            delay={7000} // 7 秒后自动隐藏
+            aria-label="Close"
+            style={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+            }}
+          >
+            <Toast.Header>
+              <strong className="me-auto">
+                <h5 className="textcart fw-bolder">
+                  {" "}
+                  {brandInfo.brand_name}{" "}
+                  {this.state.selectedProduct.product_name}{" "}
+                </h5>{" "}
+              </strong>
+              {/* <small>11 mins ago</small> */}
+            </Toast.Header>
+            <Toast.Body>
+              <h5> 已加入購物車</h5>
+            </Toast.Body>
+          </Toast>
+        </div>
         {/* footer */}
         <div id="footer" className="d-flex">
           <div id="footerLogo" className="col-3">
