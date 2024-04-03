@@ -16,11 +16,12 @@ import { PiCoins } from "react-icons/pi";
 import { GiCancel } from "react-icons/gi";
 import DateTimePicker from "./dateTimePicker";
 import axios from "axios";
-
+import Toast from "react-bootstrap/Toast";
 class cartPay extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      issubmit: false,
       payMethod: 0,
       size_choose: "",
       selectedDate: "",
@@ -32,8 +33,9 @@ class cartPay extends Component {
       remainingPoints: 20, //剩餘點數
       usePoninter: 0,
       bagQuantity: 0,
-
       e_bill_text: "", //載具文字
+      showToast: false,
+      toastMessage: "",
       dbcarts: [
         {
           item_img: "LeDian_LOGO",
@@ -83,6 +85,28 @@ class cartPay extends Component {
       ],
     };
   }
+
+  // 点击按钮时显示Toast消息
+  handleShowToast = () => {
+    this.setState({ showToast: true });
+
+    // 3 秒后隐藏Toast消息
+    setTimeout(() => {
+      this.setState({ showToast: false });
+    }, 3000);
+  };
+
+  toggleToast = (message) => {
+    this.setState({ toastMessage: message });
+    this.setState((prevState) => ({ showToast: !prevState.showToast }));
+    if (!this.state.showToast) {
+      this.toastTimer = setTimeout(() => {
+        this.setState({ showToast: false });
+      }, 3000);
+    } else {
+      clearTimeout(this.toastTimer);
+    }
+  };
 
   nextStep = () => {
     const { currentStep } = this.state;
@@ -137,29 +161,39 @@ class cartPay extends Component {
     navigator.clipboard.writeText(copyText.value);
   };
 
-  //使用點數
-  pointerChange = (e) => {
-    if (e.target.value > this.state.remainingPoints) {
+  pointerCheck = (e) => {
+    let newState = { ...this.state };
+    // newState.usePoninter = e.target.value === "" ? 0 : e.target.value;
+    if (newState.usePoninter > this.state.remainingPoints) {
+      newState.usePoninter = 0;
+      this.setState(newState);
       swal({
         title: "已超過可用點數",
         icon: "warning",
         // buttons: true,
         dangerMode: true,
       });
+
       return;
     }
     //是否超過單筆金額
-    if (e.target.value > this.state.dbcarts.lastPrice) {
+    if (newState.usePoninter > this.state.dbcarts.lastPrice) {
       swal({
         title: "已超過單筆金額",
         icon: "warning",
         dangerMode: true,
       });
       return;
+    } else if (newState.usePoninter === "") {
+      newState.usePoninter = 0;
+      this.setState(newState);
     }
+  };
 
+  //使用點數pointerCheck
+  pointerChange = (e) => {
     let newState = { ...this.state };
-    newState.usePoninter = e.target.value === "" ? 0 : e.target.value;
+    newState.usePoninter = e.target.value;
     newState.lastPrice = newState.sumPrice - newState.usePoninter;
     this.setState(newState);
   };
@@ -235,7 +269,7 @@ class cartPay extends Component {
   };
 
   name_phone_check = () => {
-    if (this.state.userinfo.name === "" || this.state.userinfo.phone === "") {
+    if (this.state.userinfo.name === "" || this.state.userinfo.name === "") {
       swal({
         title: "請將取貨人資訊填寫完整",
         icon: "warning",
@@ -295,117 +329,124 @@ class cartPay extends Component {
   //提交訂單
   handleButtonClick = async () => {
     let newSate = { ...this.state };
-    let detailsdata;
-    detailsdata = newSate.dbcarts.map((item) => {
-      return {
-        details_name: item.item_name,
-        details_size: item.item_size,
-        details_sugar: item.item_sugar,
-        details_mperatures: item.item_temperatures,
-        details_ingredient: item.item_ingredient.replace(/^、/, ""),
-        details_amount: item.total_price,
-        details_quantity: item.item_quantity,
-        details_total: item.total_price * item.item_quantity,
+
+    if (!newSate.issubmit) {
+      newSate.issubmit = true;
+      this.setState(newSate);
+      let detailsdata;
+      detailsdata = newSate.dbcarts.map((item) => {
+        return {
+          details_name: item.item_name,
+          details_size: item.item_size,
+          details_sugar: item.item_sugar,
+          details_mperatures: item.item_temperatures,
+          details_ingredient: item.item_ingredient.replace(/^、/, ""),
+          details_amount: item.total_price,
+          details_quantity: item.item_quantity,
+          details_total: item.total_price * item.item_quantity,
+          updatetime: new Date(),
+          createtime: new Date(),
+        };
+      });
+
+      //datails整理
+      let serverData = {
+        user_id: this.state.user_id,
+        brand_id: this.state.dbcarts[0].brand_id,
+        brand_name: this.state.dbcarts[0].brand_name,
+        branch_name: this.state.dbcarts[0].branch_name,
+        orders_total: this.state.lastPrice,
+        orders_bag: this.state.bag_isChecked ? 1 : 0,
+        orders_bag_num: this.state.bagQuantity,
+        usePoninter: Number(this.state.usePoninter),
+        terms_of_payment: Number(this.state.payMethod) ? "Line Pay" : "現金",
+        invoicing_method: this.state.e_bill_text
+          ? `載具-${this.state.e_bill_text}`
+          : "紙本發票",
+        orders_pick_up: this.state.pickupTime,
+        updatedpoints: 0,
+        orders_status: 0,
+        payment_status: this.state.payMethod ? 1 : 0,
         updatetime: new Date(),
         createtime: new Date(),
+        details: detailsdata,
       };
-    });
+      let config = {
+        headers: {
+          "content-type": "application/json",
+        },
+      };
+      //現金交易
+      console.log(serverData);
+      if (serverData.terms_of_payment === "現金") {
+        this.nextStep();
+        await axios
+          .post(
+            "http://localhost:8000/cartcashpay",
+            JSON.stringify(serverData),
+            config
+          )
+          .then(async () => {
+            //刪除以結帳的購物車
+            this.delete_btn(newSate.dbcarts[0].cart_id);
 
-    //datails整理
-    let serverData = {
-      user_id: this.state.user_id,
-      brand_id: this.state.dbcarts[0].brand_id,
-      brand_name: this.state.dbcarts[0].brand_name,
-      branch_name: this.state.dbcarts[0].branch_name,
-      orders_total: this.state.lastPrice,
-      orders_bag: this.state.bag_isChecked ? 1 : 0,
-      orders_bag_num: this.state.bagQuantity,
-      usePoninter: Number(this.state.usePoninter),
-      terms_of_payment: Number(this.state.payMethod) ? "Line Pay" : "現金",
-      invoicing_method: this.state.e_bill_text
-        ? `載具-${this.state.e_bill_text}`
-        : "紙本發票",
-      orders_pick_up: this.state.pickupTime,
-      updatedpoints: 0,
-      orders_status: 0,
-      payment_status: this.state.payMethod ? 1 : 0,
-      updatetime: new Date(),
-      createtime: new Date(),
-      details: detailsdata,
-    };
-    let config = {
-      headers: {
-        "content-type": "application/json",
-      },
-    };
-    //現金交易
-    if (serverData.terms_of_payment === "現金") {
-      this.nextStep();
-      await axios
-        .post(
-          "http://localhost:8000/cartcashpay",
-          JSON.stringify(serverData),
-          config
-        )
-        .then(async () => {
-          //刪除以結帳的購物車
-          this.delete_btn(newSate.dbcarts[0].cart_id);
+            //取得localStorage的userid
+            let userdata = localStorage.getItem("userdata");
+            userdata = JSON.parse(userdata);
+            let user_id = userdata.user_id;
+            console.log(user_id);
 
-          //取得localStorage的userid
-          let userdata = localStorage.getItem("userdata");
-          userdata = JSON.parse(userdata);
-          let user_id = userdata.user_id;
-          console.log(user_id);
+            let updatepoints =
+              this.state.remainingPoints - this.state.usePoninter;
+            console.log("updatepoints", updatepoints);
 
-          let updatepoints =
-            this.state.remainingPoints - this.state.usePoninter;
-          console.log("updatepoints", updatepoints);
+            let serverData = { updatepoints: updatepoints };
 
-          let serverData = { updatepoints: updatepoints };
+            //更新user點數
+            await axios
+              .patch(`http://localhost:8000/user/${user_id}`, serverData)
+              .then(() => {
+                console.log("更新點數成功");
+              });
+          });
+      }
+      if (serverData.terms_of_payment === "Line Pay") {
+        //LINEPAY 串接
+        this.handleShowToast();
+        await axios
+          .post(
+            "http://localhost:8000/cartlinepay",
+            JSON.stringify(serverData),
+            config
+          )
+          //刪除購物車
+          .then(async (res) => {
+            //   console.log(res.data);
+            //跳轉line pay
+            window.location.replace(res.data);
+            //刪除以結帳的購物車
+            this.delete_btn(newSate.dbcarts[0].cart_id);
 
-          //更新user點數
-          await axios
-            .patch(`http://localhost:8000/user/${user_id}`, serverData)
-            .then(() => {
-              console.log("更新點數成功");
-            });
-        });
-    }
-    if (serverData.terms_of_payment === "Line Pay") {
-      //LINEPAY 串接
-      await axios
-        .post(
-          "http://localhost:8000/cartlinepay",
-          JSON.stringify(serverData),
-          config
-        )
-        //刪除購物車
-        .then(async (res) => {
-          //   console.log(res.data);
-          //跳轉line pay
-          window.location.replace(res.data);
-          //刪除以結帳的購物車
-          this.delete_btn(newSate.dbcarts[0].cart_id);
+            //取得localStorage的userid
+            let userdata = localStorage.getItem("userdata");
+            userdata = JSON.parse(userdata);
+            let user_id = userdata.user_id;
+            console.log(user_id);
 
-          //取得localStorage的userid
-          let userdata = localStorage.getItem("userdata");
-          userdata = JSON.parse(userdata);
-          let user_id = userdata.user_id;
-          console.log(user_id);
+            let updatepoints =
+              this.state.remainingPoints - this.state.usePoninter;
+            console.log("updatepoints", updatepoints);
 
-          let updatepoints =
-            this.state.remainingPoints - this.state.usePoninter;
-          console.log("updatepoints", updatepoints);
+            let serverData = { updatepoints: updatepoints };
 
-          let serverData = { updatepoints: updatepoints };
-
-          //更新user點數
-          await axios
-            .patch(`http://localhost:8000/user/${user_id}`, serverData)
-            .then(() => {
-              console.log("更新點數成功");
-            });
-        });
+            //更新user點數
+            await axios
+              .patch(`http://localhost:8000/user/${user_id}`, serverData)
+              .then(() => {
+                console.log("更新點數成功");
+              });
+          });
+      }
     }
   };
 
@@ -1736,7 +1777,7 @@ class cartPay extends Component {
                                                           {
                                                             item.ingredient_choose
                                                           }
-                                                          +
+                                                          $
                                                           {
                                                             item.ingredient_price
                                                           }
@@ -1862,6 +1903,7 @@ class cartPay extends Component {
                                   type="text"
                                   value={this.state.usePoninter}
                                   onChange={this.pointerChange}
+                                  onBlur={this.pointerCheck}
                                 />
                                 <p className="mt-3 ps-3 text-des star-must mb-0">
                                   可用點數:{this.state.remainingPoints}
@@ -1929,7 +1971,7 @@ class cartPay extends Component {
                               </div>
                               <div className="col text-des text-end star-must">
                                 <p>
-                                  <span>-</span>
+                                  <span>-$</span>
                                   {this.state.usePoninter}
                                 </p>
                               </div>
@@ -2302,6 +2344,22 @@ class cartPay extends Component {
                                 </button>
                               </div>
                             </div>
+
+                            <Toast
+                              show={this.state.showToast}
+                              onClose={this.toggleToast}
+                              className="custom-toast position-fixed  p-3"
+                            >
+                              <div class="d-flex">
+                                <Toast.Body>送出訂單</Toast.Body>
+                                <button
+                                  type="button"
+                                  class="btn-close me-2 m-auto"
+                                  data-bs-dismiss="toast"
+                                  aria-label="Close"
+                                ></button>
+                              </div>
+                            </Toast>
                           </div>
                         </div>
                       </fieldset>

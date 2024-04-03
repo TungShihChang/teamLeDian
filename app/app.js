@@ -1433,6 +1433,7 @@ const LINEPAY_CHANNEL_ID = 2004276099;
 const LINEPAY_VERSION = "v3";
 const LINEPAY_SITE = "https://sandbox-api-pay.line.me";
 let orders = {};
+let orderId = parseInt(new Date().getTime() / 1000);
 function createSignature(uri, linePayBody) {
   let nonce = parseInt(new Date().getTime() / 1000);
   const string = `${SecretKey}/${LINEPAY_VERSION}${uri}${JSON.stringify(
@@ -1449,8 +1450,10 @@ function createSignature(uri, linePayBody) {
   console.log("headersssssss" + headers);
   return headers;
 }
-let orderId = parseInt(new Date().getTime() / 1000);
+
 app.post("/cartlinepay", function (req, res) {
+  orders = {};
+  orderId = parseInt(new Date().getTime() / 1000);
   console.log("ok");
   console.log(req.body);
 

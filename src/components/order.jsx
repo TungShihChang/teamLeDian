@@ -46,6 +46,7 @@ class order extends Component {
         sugar: "",
       },
       showToast: false, // 初始状态为不显示Toast
+      successMessage: "",
     };
   }
 
@@ -830,6 +831,7 @@ class order extends Component {
 
   // 加入購物車
   cartpay = async (e) => {
+    let newState = { ...this.state };
     let serverData = {
       cart_id: this.state.cart_id,
       user_id: this.state.user_id, //req.params.userid
@@ -850,6 +852,20 @@ class order extends Component {
       updatetime: new Date(),
       createtime: new Date(),
     };
+    console.log(serverData);
+    if (
+      serverData.item_size === undefined ||
+      serverData.item_sugar === undefined ||
+      serverData.item_temperatures === undefined
+    ) {
+      newState.successMessage = "加入購物車失敗 請選擇尺寸、甜度、溫度";
+      this.setState(newState);
+      this.handleShowToast();
+      return;
+    }
+    newState.successMessage = "成功加入購物車";
+    this.setState(newState);
+    this.handleShowToast();
     let config = {
       headers: {
         "content-type": "application/json",
@@ -1037,7 +1053,10 @@ class order extends Component {
                 alt="logo"
               ></img>
             </h4>
-            <h4 className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center">
+            <h4
+              className="my-auto p-0 btn headerText menuBtn d-flex align-items-center justify-content-center"
+              onClick={this.cartMenuClick}
+            >
               <HiOutlineShoppingBag className="fs-4" />
               購物車
             </h4>
@@ -2196,7 +2215,6 @@ class order extends Component {
                       type="button"
                       data-bs-dismiss="modal"
                       onClick={() => {
-                        this.handleShowToast();
                         this.cartpay();
                         this.handleCartOkClick();
                       }}
@@ -2234,7 +2252,7 @@ class order extends Component {
               {/* <small>11 mins ago</small> */}
             </Toast.Header>
             <Toast.Body>
-              <h5> 已加入購物車</h5>
+              <h5>{this.state.successMessage}</h5>
             </Toast.Body>
           </Toast>
         </div>
